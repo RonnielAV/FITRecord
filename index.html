@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de Salud y Fitness</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Mi Progreso de Salud y Fitness</h1>
+    </header>
+
+    <main>
+        <section id="perfilUsuario">
+            <h2>Perfil de Usuario</h2>
+            <form id="formPerfil">
+                <div>
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                <div>
+                    <label for="edad">Edad:</label>
+                    <input type="number" id="edad" name="edad" min="1">
+                </div>
+                <div>
+                    <label for="pesoInicial">Peso Inicial (lbs):</label>
+                    <input type="number" id="pesoInicial" name="pesoInicial" step="0.1" value="265">
+                </div>
+                <div>
+                    <label for="altura">Altura (pies decimales, ej. 6.0):</label>
+                    <input type="number" id="altura" name="altura" step="0.01" value="6.0">
+                </div>
+
+                <fieldset>
+                    <legend>Condiciones Médicas Preexistentes</legend>
+                    <div>
+                        <label for="hipertension">Hipertensión:</label>
+                        <input type="text" id="hipertension" name="hipertension" value="High normal">
+                    </div>
+                    <div>
+                        <label for="higadoGraso">Hígado Graso:</label>
+                        <input type="text" id="higadoGraso" name="higadoGraso" value="Nivel 3">
+                    </div>
+                </fieldset>
+
+                <button type="submit">Guardar Perfil</button>
+            </form>
+        </section>
+
+        <section id="registroDiario">
+            <h2>Registro Diario</h2>
+            <form id="formRegistroDiario">
+                <div>
+                    <label for="fechaRegistro">Fecha:</label>
+                    <input type="date" id="fechaRegistro" name="fechaRegistro" required>
+                </div>
+                <div>
+                    <label for="pesoActual">Peso Actual (lbs):</label>
+                    <input type="number" id="pesoActual" name="pesoActual" step="0.1" required>
+                </div>
+
+                <fieldset>
+                    <legend>Presión Arterial</legend>
+                    <div>
+                        <label for="presionSistolica">Sistólica (mmHg):</label>
+                        <input type="number" id="presionSistolica" name="presionSistolica" min="0">
+                    </div>
+                    <div>
+                        <label for="presionDiastolica">Diastólica (mmHg):</label>
+                        <input type="number" id="presionDiastolica" name="presionDiastolica" min="0">
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Alimentación</legend>
+                    <div>
+                        <label for="desayuno">Desayuno:</label>
+                        <textarea id="desayuno" name="desayuno" rows="3"></textarea>
+                    </div>
+                    <div>
+                        <label for="almuerzo">Almuerzo:</label>
+                        <textarea id="almuerzo" name="almuerzo" rows="3"></textarea>
+                    </div>
+                    <div>
+                        <label for="cena">Cena:</label>
+                        <textarea id="cena" name="cena" rows="3"></textarea>
+                    </div>
+                    <div>
+                        <label for="snacks">Comidas Adicionales/Snacks:</label>
+                        <textarea id="snacks" name="snacks" rows="3"></textarea>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Hidratación</legend>
+                    <div>
+                        <label for="otrasBebidas">Otras Bebidas Consumidas (Tipo y Cantidad):</label>
+                        <input type="text" id="otrasBebidas" name="otrasBebidas">
+                    </div>
+                    <div>
+                        <label for="aguaConsumidaML">Agua Consumida (mL):</label>
+                        <input type="number" id="aguaConsumidaML" name="aguaConsumidaML" min="0">
+                    </div>
+                </fieldset>
+
+                <div>
+                    <label for="actividadFisica">Actividad Física Realizada:</label>
+                    <textarea id="actividadFisica" name="actividadFisica" rows="3"></textarea>
+                </div>
+
+                <button type="submit">Guardar Registro del Día</button>
+            </form>
+        </section>
+
+        <section id="historialYAnalisis">
+            <h2>Historial y Análisis</h2>
+            
+            <div id="resumenActual">
+                <h3>Resumen de la Última Entrada</h3>
+                <p><strong>Fecha:</strong> <span id="resumenFecha">--</span></p>
+                <p><strong>Peso:</strong> <span id="resumenPeso">--</span> lbs</p>
+                <p><strong>IMC:</strong> <span id="resumenIMC">--</span></p>
+                <p><strong>Presión Arterial:</strong> <span id="resumenPresion">--</span></p>
+            </div>
+            <div id="contenedorHistorial">
+            </div>
+
+            <section id="planDiaSiguiente">
+                <h2>Plan de Dieta Keto Sugerido para Mañana</h2>
+                <div class="plan-comida">
+                    <p><strong>Desayuno:</strong> <span id="sugerenciaDesayuno">--</span></p>
+                    <p><strong>Almuerzo:</strong> <span id="sugerenciaAlmuerzo">--</span></p>
+                    <p><strong>Cena:</strong> <span id="sugerenciaCena">--</span></p>
+                    <p><strong>Snacks:</strong> <span id="sugerenciaSnacks">--</span></p>
+                </div>
+                <button id="btnGenerarNuevoPlan">Generar Otro Plan</button>
+            </section>
+
+            <section id="rutinaEjercicioSugerida">
+                <h2>Rutina de Ejercicio Sugerida para Hoy/Mañana</h2>
+                <div id="nombreRutina"></div>
+                <div id="listaEjerciciosSugeridos">
+                    </div>
+                <button id="btnGenerarNuevaRutina">Sugerir Otra Rutina (del ciclo)</button>
+            </section>
+
+            <section id="gestionDatos">
+                <h2>Gestión de Datos</h2>
+                <div class="gestion-datos-controles">
+                    <button id="btnDescargarBackup" class="btn-gestion">Descargar Backup</button>
+                    
+                    <label for="inputArchivoBackup" class="btn-gestion btn-like-label">Cargar Backup (.json)</label>
+                    <input type="file" id="inputArchivoBackup" accept=".json" style="display: none;">
+                </div>
+                <p class="nota-gestion">Nota: Cargar un backup sobrescribirá todos los datos actuales en la aplicación.</p>
+            </section>
+
+
+            <h3>Historial Completo</h3>
+            <div id="contenedorHistorial">
+                <p>No hay registros todavía. ¡Añade tu primer registro diario!</p>
+            </div>
+
+                <div class="graficos-container">
+                    <h3>Gráficos de Progreso</h3>
+                    <div class="grafico-wrapper">
+                        <canvas id="graficoPeso"></canvas>
+                    </div>
+                    <div class="grafico-wrapper">
+                        <canvas id="graficoPresion"></canvas>
+                    </div>
+                    <div class="grafico-wrapper">
+                        <canvas id="graficoIMC"></canvas>
+                    </div>
+                    <div class="grafico-wrapper">
+                        <canvas id="graficoHidratacion"></canvas>
+                    </div>
+                </div>
+           
+        </section>
+
+
+
+    </main>
+
+    <footer>
+        <p>&copy; <span id="currentYear"></span> Tu Aplicación de Salud. Desarrollado con ayuda de Asistente de Programación.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
