@@ -24,8 +24,8 @@ body {
 
     /* Fondo con imagen y capa oscura semitransparente */
     background-image: 
-        linear-gradient(rgba(var(--smartfit-dark-bg-value), 0.85), rgba(var(--smartfit-dark-bg-value), 0.85)),
-        url('fondo.jpg'); /* Asegúrate que 'fondo.jpg' esté en la misma carpeta o ajusta la ruta */
+       linear-gradient(rgba(var(--smartfit-dark-bg-value), 0.85), rgba(var(--smartfit-dark-bg-value), 0.85)),
+    url('/FITRecord/fondo.jpg'); /* Ajusta 'nombre-de-tu-repositorio' */
     background-size: auto, cover; 
     background-position: center center, center center;
     background-repeat: no-repeat, no-repeat;
