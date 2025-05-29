@@ -2,15 +2,17 @@
     --smartfit-orange: #FDB913;
     --smartfit-white: #FFFFFF;
     --smartfit-black: #000000;
-    --smartfit-dark-bg: #181818;
+    --smartfit-dark-bg-value: 24, 24, 24; /* Para usar en RGBA */
+    --smartfit-dark-bg-solid: #181818; /* Color sólido para elementos */
     --smartfit-light-bg: var(--smartfit-white);
     --smartfit-text-on-dark: #EAEAEA;
     --smartfit-text-on-light: #212529;
-    --smartfit-input-bg: #EFEFEF; /* Un gris muy claro para inputs */
-    --smartfit-border-color-light: #E0E0E0; /* Bordes para elementos sobre fondo claro */
-    --smartfit-border-color-dark: #333333;  /* Bordes para elementos sobre fondo oscuro */
-    --smartfit-orange-hover: #e6a700; /* Naranja más oscuro para hover */
+    --smartfit-input-bg: #EFEFEF;
+    --smartfit-border-color-light: #D8D8D8; /* Un poco más visible sobre blanco */
+    --smartfit-border-color-dark: #333333;
+    --smartfit-orange-hover: #e6a700;
     --smartfit-section-header-color: var(--smartfit-orange);
+    --smartfit-medium-gray: #4A4A4A; /* Un gris medio para botones secundarios */
 }
 
 body {
@@ -18,30 +20,40 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: var(--smartfit-dark-bg);
     color: var(--smartfit-text-on-dark);
+
+    /* Fondo con imagen y capa oscura semitransparente */
+    background-image: 
+        linear-gradient(rgba(var(--smartfit-dark-bg-value), 0.85), rgba(var(--smartfit-dark-bg-value), 0.85)),
+        url('fondo.jpg'); /* Asegúrate que 'fondo.jpg' esté en la misma carpeta o ajusta la ruta */
+    background-size: auto, cover; 
+    background-position: center center, center center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
 }
 
 header {
-    background: var(--smartfit-black); /* Fondo negro para el header */
+    background: var(--smartfit-black);
     color: var(--smartfit-white);
     padding: 1.2rem 0;
     text-align: center;
     border-bottom: 3px solid var(--smartfit-orange);
+    position: relative; 
+    z-index: 10;
 }
 
 header h1 {
     margin: 0;
     font-weight: 600;
-    color: var(--smartfit-white); /* "Smart" en blanco */
+    color: var(--smartfit-white);
 }
-/* Podrías necesitar un span en el HTML para colorear "Fit" diferente si quisieras replicar el logo exactamente */
 
 main {
     padding: 20px;
     max-width: 800px;
     margin: 30px auto;
-    /* No hay fondo general para main, las secciones lo tendrán */
+    position: relative;
+    z-index: 5;
 }
 
 /* Estilos para Secciones (Tarjetas de Contenido) */
@@ -49,13 +61,14 @@ main {
 #registroDiario,
 #historialYAnalisis,
 #planDiaSiguiente,
+#rutinaEjercicioSugerida,
 #gestionDatos {
     background: var(--smartfit-light-bg);
     color: var(--smartfit-text-on-light);
     padding: 25px;
     border-radius: 8px;
     margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Sombra más pronunciada sobre fondo oscuro */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25); /* Sombra un poco más oscura para destacar sobre el fondo imagen */
 }
 
 /* Títulos dentro de las secciones */
@@ -63,17 +76,19 @@ main {
 #registroDiario h2,
 #historialYAnalisis h2,
 #planDiaSiguiente h2,
+#rutinaEjercicioSugerida h2,
 #gestionDatos h2 {
     color: var(--smartfit-section-header-color);
     border-bottom: 2px solid var(--smartfit-orange);
     padding-bottom: 8px;
-    margin-top: 0; /* Eliminar margen superior si es el primer elemento */
+    margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.6em;
 }
 
 #historialYAnalisis h3,
-#planDiaSiguiente h3 { /* Títulos secundarios */
+#planDiaSiguiente h3,
+#rutinaEjercicioSugerida h3 { /* Títulos secundarios */
     color: var(--smartfit-text-on-light);
     opacity: 0.9;
     border-bottom: 1px solid var(--smartfit-border-color-light);
@@ -83,6 +98,10 @@ main {
     font-size: 1.3em;
 }
 
+/* Espaciado para iconos en títulos */
+h2 .fas, h2 .far, h2 .fab {
+    margin-right: 10px;
+}
 
 /* Formularios */
 #formPerfil div,
@@ -121,10 +140,9 @@ main {
 #formRegistroDiario input[type="date"]:focus,
 #formRegistroDiario textarea:focus {
     border-color: var(--smartfit-orange);
-    box-shadow: 0 0 0 0.2rem rgba(253, 185, 19, 0.25); /* Glow naranja al enfocar */
+    box-shadow: 0 0 0 0.2rem rgba(253, 185, 19, 0.25);
     outline: none;
 }
-
 
 #formPerfil fieldset,
 #formRegistroDiario fieldset {
@@ -137,9 +155,25 @@ main {
 #perfilUsuario fieldset legend,
 #registroDiario fieldset legend {
     font-weight: bold;
-    color: var(--smartfit-orange); /* Leyendas en naranja */
+    color: var(--smartfit-orange);
     padding: 0 10px;
     font-size: 1.1em;
+}
+
+/* Botones */
+button, .btn-like-label { /* Estilo base para todos los botones y labels que parecen botones */
+    padding: 12px 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.05em; /* Ligeramente más grande */
+    font-weight: bold;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    text-align: center;
+}
+button .fas, button .far, button .fab,
+.btn-like-label .fas, .btn-like-label .far, .btn-like-label .fab {
+    margin-right: 8px;
 }
 
 /* Botones Principales de Formulario */
@@ -147,18 +181,10 @@ main {
 #formRegistroDiario button[type="submit"] {
     display: block;
     width: 100%;
-    padding: 12px 18px;
     background: var(--smartfit-orange);
-    color: var(--smartfit-black); /* Texto negro sobre naranja para buen contraste */
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.1em;
+    color: var(--smartfit-black);
     margin-top: 15px;
-    transition: background-color 0.2s ease;
 }
-
 #formPerfil button[type="submit"]:hover,
 #formRegistroDiario button[type="submit"]:hover {
     background: var(--smartfit-orange-hover);
@@ -166,67 +192,33 @@ main {
 
 /* Estilos para Historial y Análisis */
 #resumenActual {
-    background-color: var(--smartfit-input-bg); /* Fondo claro para el resumen */
+    background-color: var(--smartfit-input-bg);
     padding: 18px;
     border-radius: 5px;
     margin-bottom: 25px;
-    border-left: 5px solid var(--smartfit-orange); /* Acento naranja */
+    border-left: 5px solid var(--smartfit-orange);
 }
-
-#resumenActual p {
-    margin: 8px 0;
-    font-size: 1.05em;
-}
-#resumenActual p strong {
-    color: var(--smartfit-text-on-light); /* Texto principal oscuro */
-    opacity: 0.8;
-}
+#resumenActual p { margin: 8px 0; font-size: 1.05em; }
+#resumenActual p strong { color: var(--smartfit-text-on-light); opacity: 0.8; }
 
 #contenedorHistorial .entrada-historial {
-    background-color: var(--smartfit-white); /* Fondo blanco para cada entrada */
+    background-color: var(--smartfit-white);
     border: 1px solid var(--smartfit-border-color-light);
     border-radius: 5px;
     padding: 18px;
     margin-bottom: 18px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.08);
 }
-
-#contenedorHistorial .entrada-historial h4 {
-    margin-top: 0;
-    color: var(--smartfit-orange); 
-    font-size: 1.25em;
-    margin-bottom: 12px;
-}
-
-#contenedorHistorial .entrada-historial p {
-    margin: 6px 0;
-    font-size: 0.98em;
-    line-height: 1.5;
-}
-
-#contenedorHistorial .entrada-historial strong {
-    color: var(--smartfit-text-on-light);
-    opacity: 0.75;
-}
-
-#contenedorHistorial .datos-comida {
-    margin-top: 10px;
-    padding-left: 18px;
-    border-left: 3px solid var(--smartfit-input-bg); /* Borde sutil para datos de comida */
-}
+#contenedorHistorial .entrada-historial h4 { margin-top: 0; color: var(--smartfit-orange); font-size: 1.25em; margin-bottom: 12px; }
+#contenedorHistorial .entrada-historial p { margin: 6px 0; font-size: 0.98em; line-height: 1.5; }
+#contenedorHistorial .entrada-historial strong { color: var(--smartfit-text-on-light); opacity: 0.75; }
+#contenedorHistorial .datos-comida { margin-top: 10px; padding-left: 18px; border-left: 3px solid var(--smartfit-input-bg); }
 
 /* Estilos para Plan de Dieta */
-#planDiaSiguiente .plan-comida p {
-    font-size: 1.05em;
-    margin: 10px 0;
-    line-height: 1.6;
-}
+#planDiaSiguiente .plan-comida p { font-size: 1.05em; margin: 10px 0; line-height: 1.6; }
+#planDiaSiguiente .plan-comida p strong { color: var(--smartfit-orange); }
 
-#planDiaSiguiente .plan-comida p strong {
-    color: var(--smartfit-orange); /* Destacar tipo de comida en naranja */
-}
-
-.enlace-receta-libro {
+.enlace-receta-libro, .enlace-ejercicio-libro {
     font-size: 0.85em;
     margin-left: 10px;
     padding: 4px 8px; 
@@ -236,58 +228,41 @@ main {
     text-decoration: none;
     border-radius: 4px; 
     border: 1px solid var(--smartfit-orange-hover);
-    cursor: pointer;
     display: inline-block; 
     line-height: 1; 
     vertical-align: middle;
-    transition: background-color 0.2s ease;
 }
-.enlace-receta-libro:hover {
+.enlace-receta-libro:hover, .enlace-ejercicio-libro:hover {
     background-color: var(--smartfit-orange-hover);
     border-color: var(--smartfit-orange);
 }
 
 /* Botones de Gestión y Plan */
-#btnGenerarNuevoPlan { /* Ya estilizado en la sección anterior con el naranja */
+#btnGenerarNuevoPlan, #btnGenerarNuevaRutina {
+    display: inline-block;
+    width: auto;
     background: var(--smartfit-orange);
     color: var(--smartfit-black);
-    font-weight: bold;
+    margin-top: 15px;
 }
-#btnGenerarNuevoPlan:hover {
+#btnGenerarNuevoPlan:hover, #btnGenerarNuevaRutina:hover {
     background: var(--smartfit-orange-hover);
 }
 
-.btn-gestion { /* Clase base para botones de gestión */
-    padding: 10px 18px;
-    font-size: 0.95em;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    border: 1px solid transparent;
-    font-weight: bold;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-#btnDescargarBackup {
-    background-color: #787f86;
+.btn-gestion { /* Clase para botones de descarga/carga */
+    background-color: var(--smartfit-medium-gray);
     color: var(--smartfit-white);
     border-color: var(--smartfit-medium-gray);
-    display: inline-block;
+    display: inline-block; /* Para que el label se comporte como botón */
+    width: auto; /* Ajustar ancho automáticamente */
 }
-#btnDescargarBackup:hover {
-    background-color: #495057; /* Un gris más oscuro */
-    border-color: #343a40;
+.btn-gestion:hover {
+    background-color: #5a6268; /* Un gris más oscuro para hover */
+    border-color: #545b62;
 }
-
-.btn-like-label { /* Para el label del input de archivo */
-    background-color: #787f86;
-    color: var(--smartfit-white);
-    border-color: var(--smartfit-medium-gray);
-    display: inline-block; 
-}
-.btn-like-label:hover {
-    background-color: #495057;
-    border-color: #343a40;
+/* Ocultar el input file real */
+#inputArchivoBackup {
+    display: none;
 }
 
 .nota-gestion {
@@ -297,123 +272,29 @@ main {
     margin-top: 15px;
 }
 
+/* Estilos para Rutina de Ejercicio */
+#nombreRutina { font-size: 1.3em; font-weight: bold; color: var(--smartfit-orange); margin-bottom: 15px; }
+.ejercicio-sugerido { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed var(--smartfit-border-color-light); }
+.ejercicio-sugerido:last-child { border-bottom: none; padding-bottom: 0; }
+.ejercicio-sugerido h4 { font-size: 1.15em; color: var(--smartfit-text-on-light); margin-top: 0; margin-bottom: 8px; }
+.ejercicio-sugerido p { font-size: 0.95em; margin-bottom: 8px; line-height: 1.5; }
+.ejercicio-sugerido strong { opacity: 0.85; }
+
 
 /* Estilos para Gráficos */
-.graficos-container {
-    margin-top: 40px; 
-    padding-top: 20px;
-    border-top: 1px solid var(--smartfit-border-color-light); 
-}
-
-.graficos-container h3 { /* Ya tiene un estilo, pero podemos asegurar que aplique */
-    color: var(--smartfit-text-on-light);
-    opacity: 0.9;
-    margin-bottom: 25px;
-}
-
-.grafico-wrapper {
-    margin-bottom: 30px; 
-    height: 280px; 
-    background-color: var(--smartfit-input-bg); /* Fondo muy claro para el wrapper del gráfico */
-    padding: 10px;
-    border-radius: 5px;
-}
+.graficos-container { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--smartfit-border-color-light); }
+.graficos-container h3 { color: var(--smartfit-text-on-light); opacity: 0.9; margin-bottom: 25px; }
+.grafico-wrapper { margin-bottom: 30px; height: 280px; background-color: var(--smartfit-input-bg); padding: 10px; border-radius: 5px; }
 
 /* Footer */
 footer {
     text-align: center;
     padding: 25px 20px;
-    background: var(--smartfit-black); /* Footer negro */
+    background: var(--smartfit-black);
     color: var(--smartfit-text-on-dark);
-    opacity: 0.8;
+    opacity: 0.9;
     margin-top: 40px;
     border-top: 3px solid var(--smartfit-orange);
-}
-
-#rutinaEjercicioSugerida {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: var(--smartfit-light-bg); /* Usando la paleta SmartFit */
-    color: var(--smartfit-text-on-light);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-#rutinaEjercicioSugerida h2 {
-    color: var(--smartfit-section-header-color);
-    border-bottom: 2px solid var(--smartfit-orange);
-    padding-bottom: 8px;
-    margin-bottom: 20px;
-}
-
-#nombreRutina {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: var(--smartfit-orange);
-    margin-bottom: 15px;
-}
-
-.ejercicio-sugerido {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px dashed var(--smartfit-border-color-light);
-}
-.ejercicio-sugerido:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.ejercicio-sugerido h4 {
-    font-size: 1.15em;
-    color: var(--smartfit-text-on-light);
-    margin-top: 0;
-    margin-bottom: 8px;
-}
-.ejercicio-sugerido p {
-    font-size: 0.95em;
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-.ejercicio-sugerido strong { /* Para "Ejecución:" */
-    opacity: 0.85;
-}
-
-#btnGenerarNuevaRutina {
-    display: inline-block;
-    width: auto;
-    padding: 10px 20px;
-    background: var(--smartfit-orange);
-    color: var(--smartfit-black);
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    margin-top: 15px;
-    transition: background-color 0.2s ease;
-}
-
-#btnGenerarNuevaRutina:hover {
-    background: var(--smartfit-orange-hover);
-}
-
-/* Estilo para el enlace/botón del libro, similar al de recetas */
-.enlace-ejercicio-libro {
-    font-size: 0.8em;
-    margin-left: 8px;
-    padding: 3px 7px;
-    background-color: var(--smartfit-orange);
-    color: var(--smartfit-black);
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 4px;
-    border: 1px solid var(--smartfit-orange-hover);
-    cursor: pointer;
-    display: inline-block;
-    line-height: 1;
-    vertical-align: middle;
-}
-.enlace-ejercicio-libro:hover {
-    background-color: var(--smartfit-orange-hover);
-    border-color: var(--smartfit-orange);
+    position: relative;
+    z-index: 10;
 }
