@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Curl con barra">
+  <rect width="640" height="420" fill="#f8f0eb"/>
+  <circle cx="320" cy="112" r="25" fill="#f2c7a1" stroke="#17211f" stroke-width="8"/>
+  <path d="M292 146c-23 50-20 100 0 149M348 146c22 50 22 100 0 149" stroke="#b45f45" stroke-width="29" stroke-linecap="round"/>
+  <path d="M286 178l-54 78M354 178l54 78" stroke="#b45f45" stroke-width="22" stroke-linecap="round"/>
+  <path d="M226 256h188" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="205" cy="256" r="19" fill="#376f9f"/>
+  <circle cx="435" cy="256" r="19" fill="#376f9f"/>
+  <path d="M292 294l-48 86M348 294l50 86" stroke="#2f7d6b" stroke-width="24" stroke-linecap="round"/>
+  <path d="M224 382h58M388 382h58" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <path d="M250 60h140" stroke="#9aa9a0" stroke-width="8" stroke-linecap="round"/>
+</svg>

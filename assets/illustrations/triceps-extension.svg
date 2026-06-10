@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Press frances">
+  <rect width="640" height="420" fill="#f4f2fb"/>
+  <path d="M170 304h300" stroke="#17211f" stroke-width="20" stroke-linecap="round"/>
+  <path d="M206 304l-46 72M434 304l50 72" stroke="#17211f" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="252" cy="252" r="24" fill="#f2c7a1" stroke="#17211f" stroke-width="8"/>
+  <path d="M276 263c55 16 105 16 150 0" stroke="#2f7d6b" stroke-width="28" stroke-linecap="round"/>
+  <path d="M314 236l-18-78M398 236l18-78" stroke="#2f7d6b" stroke-width="21" stroke-linecap="round"/>
+  <path d="M282 158h150" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="260" cy="158" r="19" fill="#b45f45"/>
+  <circle cx="454" cy="158" r="19" fill="#b45f45"/>
+  <path d="M306 310l-55 44M398 310l58 44" stroke="#2f7d6b" stroke-width="22" stroke-linecap="round"/>
+  <path d="M228 356h62M444 356h62" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <path d="M82 376h476" stroke="#9aa9a0" stroke-width="10" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Press militar">
+  <rect width="640" height="420" fill="#f0f6f2"/>
+  <path d="M190 76h260" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="320" cy="152" r="25" fill="#f2c7a1" stroke="#17211f" stroke-width="8"/>
+  <path d="M290 184c-16 45-14 86 0 124M350 184c18 44 16 86 0 124" stroke="#2f7d6b" stroke-width="28" stroke-linecap="round"/>
+  <path d="M290 188l-58-92M350 188l58-92" stroke="#2f7d6b" stroke-width="22" stroke-linecap="round"/>
+  <path d="M222 96h42M376 96h42" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="170" cy="76" r="22" fill="#b45f45"/>
+  <circle cx="470" cy="76" r="22" fill="#b45f45"/>
+  <path d="M290 306l-52 82M350 306l54 82" stroke="#2f7d6b" stroke-width="24" stroke-linecap="round"/>
+  <path d="M222 390h60M392 390h60" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <path d="M258 225h124" stroke="#376f9f" stroke-width="9" stroke-linecap="round"/>
+</svg>

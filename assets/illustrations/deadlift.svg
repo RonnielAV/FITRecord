@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Peso muerto">
+  <rect width="640" height="420" fill="#eef4f3"/>
+  <path d="M100 342h440" stroke="#17211f" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="148" cy="342" r="36" fill="#b45f45"/>
+  <circle cx="492" cy="342" r="36" fill="#b45f45"/>
+  <circle cx="335" cy="146" r="24" fill="#f2c7a1" stroke="#17211f" stroke-width="8"/>
+  <path d="M320 177c-37 38-62 78-74 120M352 180c28 36 43 76 44 118" stroke="#2f7d6b" stroke-width="28" stroke-linecap="round"/>
+  <path d="M270 235l-26 100M392 235l28 100" stroke="#2f7d6b" stroke-width="22" stroke-linecap="round"/>
+  <path d="M244 335h52M397 335h52" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <path d="M270 296l-65 40M394 297l71 39" stroke="#2f7d6b" stroke-width="22" stroke-linecap="round"/>
+  <path d="M215 337h90M388 337h90" stroke="#17211f" stroke-width="9" stroke-linecap="round"/>
+  <path d="M296 188c30 25 60 28 91 8" stroke="#376f9f" stroke-width="9" stroke-linecap="round"/>
+</svg>

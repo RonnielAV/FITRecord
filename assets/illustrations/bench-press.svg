@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Press de banca">
+  <rect width="640" height="420" fill="#edf4ef"/>
+  <path d="M82 318h476" stroke="#9aa9a0" stroke-width="10" stroke-linecap="round"/>
+  <path d="M170 290h292" stroke="#17211f" stroke-width="20" stroke-linecap="round"/>
+  <path d="M205 290l-45 80M435 290l45 80" stroke="#17211f" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="250" cy="234" r="24" fill="#f2c7a1" stroke="#17211f" stroke-width="8"/>
+  <path d="M274 245c54 18 105 18 154 0" fill="none" stroke="#2f7d6b" stroke-width="28" stroke-linecap="round"/>
+  <path d="M295 242l-44 38M407 242l48 35" stroke="#2f7d6b" stroke-width="22" stroke-linecap="round"/>
+  <path d="M240 279h220" stroke="#17211f" stroke-width="9" stroke-linecap="round"/>
+  <path d="M256 174h128" stroke="#17211f" stroke-width="12" stroke-linecap="round"/>
+  <path d="M180 174h280" stroke="#17211f" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="156" cy="174" r="24" fill="#b45f45"/>
+  <circle cx="484" cy="174" r="24" fill="#b45f45"/>
+  <path d="M252 176l-18 55M385 176l40 55" stroke="#17211f" stroke-width="9" stroke-linecap="round"/>
+  <path d="M306 298l-48 45M391 298l54 45" stroke="#2f7d6b" stroke-width="24" stroke-linecap="round"/>
+  <path d="M228 348h72M423 348h70" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+</svg>

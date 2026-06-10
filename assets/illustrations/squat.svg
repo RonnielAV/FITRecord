@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Sentadilla">
+  <rect width="640" height="420" fill="#fbf5e8"/>
+  <path d="M118 76v292M522 76v292M105 76h430" stroke="#17211f" stroke-width="12" stroke-linecap="round"/>
+  <path d="M198 118h244" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="320" cy="154" r="24" fill="#f2c7a1" stroke="#17211f" stroke-width="8"/>
+  <path d="M302 184c-24 39-32 76-24 111M338 184c33 32 45 69 37 111" stroke="#2f7d6b" stroke-width="28" stroke-linecap="round"/>
+  <path d="M281 207l-72 18M360 207l75 20" stroke="#2f7d6b" stroke-width="21" stroke-linecap="round"/>
+  <path d="M278 294l-50 54M374 294l60 53" stroke="#2f7d6b" stroke-width="24" stroke-linecap="round"/>
+  <path d="M228 348l88 0M434 347h83" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="174" cy="118" r="24" fill="#b45f45"/>
+  <circle cx="466" cy="118" r="24" fill="#b45f45"/>
+  <path d="M80 370h480" stroke="#9aa9a0" stroke-width="10" stroke-linecap="round"/>
+</svg>

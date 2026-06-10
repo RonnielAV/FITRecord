@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Dominadas">
+  <rect width="640" height="420" fill="#eef5fb"/>
+  <path d="M110 70h420M135 70v300M505 70v300" stroke="#17211f" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="320" cy="158" r="25" fill="#f2c7a1" stroke="#17211f" stroke-width="8"/>
+  <path d="M318 187c-34 20-48 61-38 109M322 187c38 20 52 61 43 109" fill="none" stroke="#376f9f" stroke-width="24" stroke-linecap="round"/>
+  <path d="M286 198l-58-98M354 198l58-98" stroke="#376f9f" stroke-width="21" stroke-linecap="round"/>
+  <path d="M222 102h52M366 102h52" stroke="#17211f" stroke-width="11" stroke-linecap="round"/>
+  <path d="M286 296l-38 72M363 296l42 72" stroke="#376f9f" stroke-width="22" stroke-linecap="round"/>
+  <path d="M232 370h44M391 370h44" stroke="#17211f" stroke-width="10" stroke-linecap="round"/>
+  <path d="M260 218c37 19 78 19 121 0" stroke="#2f7d6b" stroke-width="10" stroke-linecap="round"/>
+</svg>
