@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FitRecord</title>
+    <link rel="stylesheet" href="styles.css?v=books-20260610-smartfit-black-yellow" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">FitRecord</p>
+          <h1>Registro diario de entrenamiento y keto</h1>
+        </div>
+        <div class="profile-switcher">
+          <label for="profileSelect">Perfil</label>
+          <select id="profileSelect"></select>
+          <button id="newProfileBtn" type="button">Nuevo</button>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Secciones de FitRecord">
+        <button class="tab is-active" type="button" data-view="today">Hoy</button>
+        <button class="tab" type="button" data-view="library">Ejercicios</button>
+        <button class="tab" type="button" data-view="nutrition">Keto</button>
+        <button class="tab" type="button" data-view="week">Semana</button>
+        <button class="tab" type="button" data-view="profile">Perfil</button>
+        <button class="tab" type="button" data-view="warnings">Advertencias</button>
+      </nav>
+
+      <main id="app" class="content" tabindex="-1"></main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="data.js?v=books-20260610-smartfit-black-yellow"></script>
+    <script src="generated-data.js?v=books-20260610-smartfit-black-yellow"></script>
+    <script src="app.js?v=books-20260610-smartfit-black-yellow"></script>
+  </body>
+</html>
