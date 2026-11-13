@@ -1,0 +1,31 @@
+{
+  "name": "FitRecord Pro — Entrenamiento, Programas & Nutrición Keto",
+  "short_name": "FitRecord",
+  "description": "App de entrenamiento estilo Hevy/JEFIT/Boostcamp con 1,324 ejercicios HD, temporizador integrado por ejercicio, auto-cálculo biométrico y 131 recetas Keto transcritas.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#050806",
+  "theme_color": "#39ff14",
+  "categories": ["fitness", "health", "lifestyle"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo-fitrecord.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
