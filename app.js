@@ -948,10 +948,16 @@
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="biometria">
-              📏 Cambiar Altura / Peso
+              📏 Altura / Peso
             </button>
             <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="salud">
-              🛡️ Equipo, Lesiones y Salud
+              🛡️ Equipo y Salud
+            </button>
+            <button type="button" class="secondary" style="flex:1;border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
+              ⬇️ Descargar .JSON
+            </button>
+            <button type="button" class="ghost" style="flex:1;" data-action="trigger-import-json">
+              ⬆️ Cargar .JSON
             </button>
           </div>
         </section>
@@ -1572,10 +1578,13 @@
           1️⃣ Altura, Peso e Índices Auto-Calculables
         </button>
         <button type="button" class="branch-step-btn ${subTab === 'salud' ? 'is-active' : ''}" data-action="open-profile-tab" data-subtab="salud">
-          2️⃣ Equipo Disponible, Lesiones y Condiciones Médicas
+          2️⃣ Equipo Disponible, Lesiones y Salud
         </button>
         <button type="button" class="branch-step-btn ${subTab === 'historial' ? 'is-active' : ''}" data-action="open-profile-tab" data-subtab="historial">
-          3️⃣ Historial de Entrenamientos y Seguridad (${logs.length})
+          3️⃣ Historial de Entrenamientos (${logs.length})
+        </button>
+        <button type="button" class="branch-step-btn ${subTab === 'json' ? 'is-active' : ''}" data-action="open-profile-tab" data-subtab="json">
+          4️⃣ Descargar / Cargar Perfil (.JSON)
         </button>
       </div>
 
@@ -1720,8 +1729,14 @@
               </div>
             ` : ''}
 
-            <div class="actions" style="margin-top:16px;">
+            <div class="actions" style="margin-top:16px;flex-wrap:wrap;gap:10px;">
               <button type="submit">💾 Guardar Biometría</button>
+              <button type="button" class="secondary" style="border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
+                ⬇️ Descargar Perfil (.JSON)
+              </button>
+              <button type="button" class="secondary" data-action="trigger-import-json">
+                ⬆️ Cargar Perfil (.JSON)
+              </button>
             </div>
           </form>
         </section>
@@ -1802,7 +1817,17 @@
 
       ${subTab === 'historial' ? `
         <section class="panel">
-          <h3 style="margin-top:0;">Bitácora de Series, Tiempos y Calorías Quemadas (${logs.length})</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+            <h3 style="margin:0;">Bitácora de Series, Tiempos y Calorías Quemadas (${logs.length})</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" class="secondary" style="border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
+                ⬇️ Descargar Perfil + Historial (.JSON)
+              </button>
+              <button type="button" class="secondary" data-action="trigger-import-json">
+                ⬆️ Cargar .JSON
+              </button>
+            </div>
+          </div>
           ${logs.length === 0 ? `
             <div class="empty-state">Aún no hay registros guardados. Ve a "Entrenar Hoy" para registrar tu primera serie o sesión por tiempo.</div>
           ` : `
@@ -1836,6 +1861,57 @@
               </tbody>
             </table>
           `}
+        </section>
+      ` : ''}
+
+      ${subTab === 'json' ? `
+        <section class="panel">
+          <span class="eyebrow">PORTABILIDAD MULTI-DISPOSITIVO (CELULAR, TABLET Y PC)</span>
+          <h3 style="margin:4px 0 10px;">Sincronizar y Respaldar Perfil en Archivo .JSON</h3>
+          <p class="muted" style="margin:0 0 18px;font-size:0.9rem;line-height:1.55;">
+            Descarga tu perfil actualizado en un archivo <strong>.json</strong> para llevar tus medidas, nivel, lesiones, equipo disponible, historial de entrenamientos, registros Keto y rutinas a cualquier otro dispositivo.
+          </p>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
+            <div class="calculation-panel" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
+              <div>
+                <span class="tag" style="margin-bottom:8px;display:inline-block;">👤 PERFIL ACTIVO</span>
+                <h4 style="margin:0 0 6px;font-size:1.02rem;color:var(--green);">1. Descargar Perfil "${escapeHtml(prof.name)}" (.JSON)</h4>
+                <p class="muted" style="margin:0;font-size:0.83rem;line-height:1.45;">
+                  Incluye tus datos biométricos (${formatHeightDisplay(prof.heightIn, prof.heightUnit)}, ${prof.weightLb} lb, ${m.bodyFatPct}% grasa), equipo, lesiones, <strong>${logs.length} entrenamientos</strong> y comidas Keto registradas.
+                </p>
+              </div>
+              <button type="button" data-action="export-profile-json" style="width:100%;">
+                ⬇️ Descargar Perfil Activo (.JSON)
+              </button>
+            </div>
+
+            <div class="calculation-panel" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
+              <div>
+                <span class="tag" style="margin-bottom:8px;display:inline-block;">⬆️ IMPORTAR / ACTUALIZAR</span>
+                <h4 style="margin:0 0 6px;font-size:1.02rem;color:var(--green);">2. Cargar Perfil desde Archivo .JSON</h4>
+                <p class="muted" style="margin:0;font-size:0.83rem;line-height:1.45;">
+                  Selecciona un archivo <code>.json</code> descargado desde tu celular o PC. FitRecord actualizará el perfil y fusionará tus series y comidas sin perder tus datos previos.
+                </p>
+              </div>
+              <button type="button" class="secondary" data-action="trigger-import-json" style="width:100%;border-color:rgba(57,255,20,0.5);color:var(--green);">
+                ⬆️ Seleccionar Archivo .JSON para Cargar
+              </button>
+            </div>
+
+            <div class="calculation-panel" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
+              <div>
+                <span class="tag" style="margin-bottom:8px;display:inline-block;">📦 RESPALDO TOTAL</span>
+                <h4 style="margin:0 0 6px;font-size:1.02rem;color:#d9ecdc;">3. Backup Completo (${state.profiles.length} Perfiles)</h4>
+                <p class="muted" style="margin:0;font-size:0.83rem;line-height:1.45;">
+                  Descarga absolutamente todos los perfiles creados en este dispositivo junto con todo el historial global de la aplicación.
+                </p>
+              </div>
+              <button type="button" class="secondary" data-action="export-full-backup-json" style="width:100%;">
+                📦 Descargar Backup Completo (.JSON)
+              </button>
+            </div>
+          </div>
         </section>
       ` : ''}
     `;
@@ -2136,6 +2212,203 @@
     }
   }
 
+  // ── JSON Profile Export & Import (Multi-Device Portability) ──
+  function slugifyFileName(str) {
+    return String(str || 'perfil')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'perfil';
+  }
+
+  function downloadJsonFile(payload, filename) {
+    const jsonText = JSON.stringify(payload, null, 2);
+    const blob = new Blob([jsonText], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 150);
+  }
+
+  function exportActiveProfileJson() {
+    // Sync any unsaved form edits if currently on profile form
+    const profileForm = document.getElementById('profileForm');
+    const prof = getActiveProfile();
+    if (profileForm) {
+      prof.name = profileForm.querySelector('[name="name"]')?.value || prof.name;
+      prof.sex = profileForm.querySelector('[name="sex"]')?.value || prof.sex;
+      prof.age = Number(profileForm.querySelector('[name="age"]')?.value) || prof.age;
+      prof.weightLb = Number(profileForm.querySelector('[name="weightLb"]')?.value) || prof.weightLb;
+      prof.level = profileForm.querySelector('[name="level"]')?.value || prof.level;
+      prof.goal = profileForm.querySelector('[name="goal"]')?.value || prof.goal;
+      prof.heightIn = readHeightInFromForm(profileForm);
+      const m = computeProfileMetrics(prof);
+      prof.bodyFatPct = m.bodyFatPct;
+      prof.leanMassLb = m.leanMassLb;
+      prof.caloriesTarget = m.suggestedCalories;
+      prof.proteinTarget = m.suggestedProtein;
+      prof.netCarbTarget = m.suggestedNetCarbs;
+      saveState();
+    }
+
+    const profLogs = state.workoutLogs.filter((l) => l.profileId === prof.id);
+    const profNutrition = state.nutritionLogs.filter((l) => l.profileId === prof.id);
+
+    const payload = {
+      format: 'fitrecord-profile-v3',
+      version: '3.0',
+      exportedAt: new Date().toISOString(),
+      profile: prof,
+      workoutLogs: profLogs,
+      nutritionLogs: profNutrition,
+      favorites: state.favorites || [],
+      selectedGroupsByDate: state.selectedGroupsByDate || {},
+      customRoutineIdsByDate: state.customRoutineIdsByDate || {},
+      swappedExerciseBySlot: state.swappedExerciseBySlot || {},
+      checkedIngredients: state.checkedIngredients || {}
+    };
+
+    const filename = `fitrecord-perfil-${slugifyFileName(prof.name)}-${todayIso()}.json`;
+    downloadJsonFile(payload, filename);
+    showToast(`⬇️ Perfil "${prof.name}" descargado como ${filename}`);
+  }
+
+  function exportFullBackupJson() {
+    saveState();
+    const payload = {
+      format: 'fitrecord-full-backup-v3',
+      version: '3.0',
+      exportedAt: new Date().toISOString(),
+      state: {
+        activeProfileId: state.activeProfileId,
+        profiles: state.profiles,
+        workoutLogs: state.workoutLogs,
+        nutritionLogs: state.nutritionLogs,
+        favorites: state.favorites,
+        selectedGroupsByDate: state.selectedGroupsByDate,
+        customRoutineIdsByDate: state.customRoutineIdsByDate,
+        swappedExerciseBySlot: state.swappedExerciseBySlot,
+        checkedIngredients: state.checkedIngredients
+      }
+    };
+    const filename = `fitrecord-backup-completo-${todayIso()}.json`;
+    downloadJsonFile(payload, filename);
+    showToast(`📦 Backup completo descargado (${state.profiles.length} perfiles).`);
+  }
+
+  function mergeById(existingArr, incomingArr) {
+    const map = new Map();
+    (Array.isArray(existingArr) ? existingArr : []).forEach((item) => {
+      if (item && item.id) map.set(String(item.id), item);
+    });
+    (Array.isArray(incomingArr) ? incomingArr : []).forEach((item) => {
+      if (item && item.id) map.set(String(item.id), item);
+    });
+    return Array.from(map.values());
+  }
+
+  function triggerImportJsonDialog() {
+    const inp = document.getElementById('importJsonFileInput');
+    if (inp) {
+      inp.value = '';
+      inp.click();
+    }
+  }
+
+  function importProfileOrBackupJson(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result || '{}'));
+        const defProf = createDefaultProfile('Perfil Importado');
+
+        // Case 1: Full multi-profile backup
+        if (data.format === 'fitrecord-full-backup-v3' && data.state && Array.isArray(data.state.profiles)) {
+          data.state.profiles.forEach((incProf) => {
+            const normalized = Object.assign({}, createDefaultProfile(incProf.name || 'Atleta'), incProf);
+            const idx = state.profiles.findIndex((p) => p.id === normalized.id || p.name.toLowerCase() === normalized.name.toLowerCase());
+            if (idx >= 0) state.profiles[idx] = normalized;
+            else state.profiles.push(normalized);
+          });
+          if (data.state.activeProfileId) state.activeProfileId = data.state.activeProfileId;
+          state.workoutLogs = mergeById(state.workoutLogs, data.state.workoutLogs);
+          state.nutritionLogs = mergeById(state.nutritionLogs, data.state.nutritionLogs);
+          state.favorites = Array.from(new Set([...(state.favorites || []), ...(data.state.favorites || [])]));
+          Object.assign(state.selectedGroupsByDate, data.state.selectedGroupsByDate || {});
+          Object.assign(state.customRoutineIdsByDate, data.state.customRoutineIdsByDate || {});
+          Object.assign(state.swappedExerciseBySlot, data.state.swappedExerciseBySlot || {});
+          Object.assign(state.checkedIngredients, data.state.checkedIngredients || {});
+          saveState();
+          render();
+          showToast(`✅ Backup completo cargado (${data.state.profiles.length} perfiles sincronizados).`);
+          return;
+        }
+
+        // Case 2: Single profile export (fitrecord-profile-v3) or raw profile object
+        const rawProf = data.profile || (data.name || data.weightLb || data.heightIn ? data : null);
+        if (!rawProf) {
+          showToast('⚠️ El archivo .JSON no contiene un perfil válido de FitRecord.');
+          return;
+        }
+
+        const importedProf = Object.assign({}, defProf, rawProf);
+        if (!importedProf.id) importedProf.id = 'prof-' + Date.now();
+        const m = computeProfileMetrics(importedProf);
+        importedProf.bodyFatPct = m.bodyFatPct;
+        importedProf.leanMassLb = m.leanMassLb;
+        importedProf.caloriesTarget = m.suggestedCalories;
+        importedProf.proteinTarget = m.suggestedProtein;
+        importedProf.netCarbTarget = m.suggestedNetCarbs;
+
+        const existingIdx = state.profiles.findIndex(
+          (p) => p.id === importedProf.id || p.name.trim().toLowerCase() === importedProf.name.trim().toLowerCase()
+        );
+        let targetProfileId = importedProf.id;
+        if (existingIdx >= 0) {
+          targetProfileId = state.profiles[existingIdx].id;
+          importedProf.id = targetProfileId;
+          state.profiles[existingIdx] = importedProf;
+        } else {
+          state.profiles.push(importedProf);
+        }
+
+        state.activeProfileId = targetProfileId;
+
+        if (Array.isArray(data.workoutLogs)) {
+          const normalizedLogs = data.workoutLogs.map((l) => Object.assign({}, l, { profileId: targetProfileId }));
+          state.workoutLogs = mergeById(state.workoutLogs, normalizedLogs);
+        }
+        if (Array.isArray(data.nutritionLogs)) {
+          const normalizedNut = data.nutritionLogs.map((l) => Object.assign({}, l, { profileId: targetProfileId }));
+          state.nutritionLogs = mergeById(state.nutritionLogs, normalizedNut);
+        }
+        if (Array.isArray(data.favorites)) {
+          state.favorites = Array.from(new Set([...(state.favorites || []), ...data.favorites]));
+        }
+        if (data.selectedGroupsByDate) Object.assign(state.selectedGroupsByDate, data.selectedGroupsByDate);
+        if (data.customRoutineIdsByDate) Object.assign(state.customRoutineIdsByDate, data.customRoutineIdsByDate);
+        if (data.swappedExerciseBySlot) Object.assign(state.swappedExerciseBySlot, data.swappedExerciseBySlot);
+        if (data.checkedIngredients) Object.assign(state.checkedIngredients, data.checkedIngredients);
+
+        saveState();
+        render();
+        showToast(`✅ Perfil "${importedProf.name}" actualizado desde .JSON con éxito.`);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ Error al leer el archivo .JSON. Verifica que sea un archivo válido.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
   // ── Main Render Dispatcher ────────────────────────────────
   function render() {
     syncWorkspaceChrome();
@@ -2218,6 +2491,16 @@
       return;
     }
 
+    if (e.target.closest('#exportProfileJsonBtn')) {
+      exportActiveProfileJson();
+      return;
+    }
+
+    if (e.target.closest('#importProfileJsonBtn')) {
+      triggerImportJsonDialog();
+      return;
+    }
+
     if (e.target.closest('#closeExerciseModal') || e.target.id === 'exerciseModal') {
       document.getElementById('exerciseModal').hidden = true;
       return;
@@ -2246,6 +2529,12 @@
       state.profileSubTab = actEl.dataset.subtab || 'biometria';
       saveState();
       render();
+    } else if (action === 'export-profile-json') {
+      exportActiveProfileJson();
+    } else if (action === 'export-full-backup-json') {
+      exportFullBackupJson();
+    } else if (action === 'trigger-import-json') {
+      triggerImportJsonDialog();
     } else if (action === 'toggle-workout-accordion') {
       if (e.target.closest('[data-action="open-exercise-modal"]')) return;
       const exId = actEl.dataset.exId;
@@ -2538,6 +2827,9 @@
       state.activeProfileId = t.value;
       saveState();
       render();
+    } else if (t.id === 'importJsonFileInput') {
+      const file = t.files && t.files[0];
+      if (file) importProfileOrBackupJson(file);
     } else if (t.id === 'todayDateInput') {
       state.selectedDate = t.value || todayIso();
       saveState();
