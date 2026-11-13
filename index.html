@@ -1,190 +1,198 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
-    <meta name="theme-color" content="#39ff14" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="FitRecord" />
-    <title>FitRecord Pro — Entrenamiento, Programas &amp; Nutrición Keto</title>
-    <link rel="icon" type="image/png" href="assets/icon-192.png" />
-    <link rel="apple-touch-icon" href="assets/icon-192.png" />
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=fitrecord-neon-v3" />
-  </head>
-  <body>
-    <!-- Ambient Diffused Neon Background Blurs -->
-    <div class="ambient-bg" aria-hidden="true">
-      <div class="ambient-orb orb-top-left"></div>
-      <div class="ambient-orb orb-top-right"></div>
-      <div class="ambient-orb orb-bottom"></div>
-      <div class="ambient-grid"></div>
-    </div>
 
-    <div class="app-workspace" id="appWorkspace">
-      <!-- Collapsible Left App Navigation Sidebar (Desktop) & Bottom Bar (Mobile) -->
-      <aside class="app-sidebar" id="appSidebar" aria-label="Navegación principal">
-        <div class="sidebar-top">
-          <div class="brand-cluster">
-            <div class="brand-logo-wrap" title="FitRecord Pro">
-              <img
-                src="assets/logo-fitrecord.jpg"
-                alt="Logo FitRecord"
-                class="brand-logo-img"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-              />
-              <div class="brand-logo-fallback" style="display:none" aria-hidden="true">
-                <svg viewBox="0 0 64 64" width="38" height="38" fill="none">
-                  <polygon points="32,3 58,18 58,46 32,61 6,46 6,18" stroke="#39ff14" stroke-width="3" fill="#071209" />
-                  <path d="M22 44 L16 32 L24 22 L33 27 L36 16 L46 20 L48 34 L39 46 Z" fill="#39ff14" opacity="0.9" />
-                </svg>
-              </div>
-            </div>
-            <div class="sidebar-brand-text">
-              <span class="eyebrow">FITRECORD PRO</span>
-              <strong>Gym &amp; Keto OS</strong>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#39ff14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FitRecord" />
+  <title>FitRecord Pro — Entrenamiento, Programas &amp; Nutrición Keto</title>
+  <link rel="icon" type="image/png" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css?v=fitrecord-neon-v3" />
+</head>
+
+<body>
+  <!-- Ambient Diffused Neon Background Blurs -->
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="ambient-orb orb-top-left"></div>
+    <div class="ambient-orb orb-top-right"></div>
+    <div class="ambient-orb orb-bottom"></div>
+    <div class="ambient-grid"></div>
+  </div>
+
+  <div class="app-workspace" id="appWorkspace">
+    <!-- Collapsible Left App Navigation Sidebar (Desktop) & Bottom Bar (Mobile) -->
+    <aside class="app-sidebar" id="appSidebar" aria-label="Navegación principal">
+      <div class="sidebar-top">
+        <div class="brand-cluster">
+          <div class="brand-logo-wrap" title="FitRecord Pro">
+            <img src="assets/logo-fitrecord.jpg" alt="Logo FitRecord" class="brand-logo-img"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="brand-logo-fallback" style="display:none" aria-hidden="true">
+              <svg viewBox="0 0 64 64" width="38" height="38" fill="none">
+                <polygon points="32,3 58,18 58,46 32,61 6,46 6,18" stroke="#39ff14" stroke-width="3" fill="#071209" />
+                <path d="M22 44 L16 32 L24 22 L33 27 L36 16 L46 20 L48 34 L39 46 Z" fill="#39ff14" opacity="0.9" />
+              </svg>
             </div>
           </div>
-          <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Contraer o expandir menú izquierdo">
-            ◀
-          </button>
+          <div class="sidebar-brand-text">
+            <span class="eyebrow">FITRECORD PRO</span>
+            <strong>Gym &amp; Keto OS</strong>
+          </div>
         </div>
-
-        <nav class="sidebar-nav" aria-label="Secciones de la aplicación">
-          <button class="nav-item is-active" type="button" data-view="dashboard" title="Dashboard Resumen">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Dashboard</span>
-          </button>
-          <button class="nav-item" type="button" data-view="workout" title="Entrenar Hoy (Estilo Hevy/JEFIT)">
-            <span class="nav-icon">🏋️</span>
-            <span class="nav-label">Entrenar Hoy</span>
-            <span class="nav-badge" id="navTodayCount">8</span>
-          </button>
-          <button class="nav-item" type="button" data-view="programs" title="Programas y Generador (Boostcamp / WorkoutGen)">
-            <span class="nav-icon">🏆</span>
-            <span class="nav-label">Programas</span>
-          </button>
-          <button class="nav-item" type="button" data-view="library" title="Biblioteca de 1,324 Ejercicios (Entrenamientos.com)">
-            <span class="nav-icon">📚</span>
-            <span class="nav-label">Ejercicios</span>
-            <span class="nav-badge" id="navExerciseCount">1324</span>
-          </button>
-          <button class="nav-item" type="button" data-view="nutrition" title="Recetario Keto Transcrito (131 Recetas)">
-            <span class="nav-icon">🥑</span>
-            <span class="nav-label">Plan Keto</span>
-            <span class="nav-badge" id="navRecipeCount">131</span>
-          </button>
-          <button class="nav-item" type="button" data-view="profile" title="Mi Perfil, Altura, IMC e Historial">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">Perfil &amp; IMC</span>
-          </button>
-        </nav>
-
-        <div class="sidebar-footer">
-          <button type="button" class="install-app-btn" id="installAppBtn" title="Instalar aplicación en Celular o PC">
-            <span class="nav-icon">📲</span>
-            <span class="nav-label">Instalar App</span>
-          </button>
-        </div>
-      </aside>
-
-      <!-- Main Content Area -->
-      <div class="app-main-area">
-        <header class="topbar">
-          <div class="topbar-left">
-            <button type="button" class="mobile-sidebar-toggle" id="mobileSidebarToggle" title="Contraer/Expandir columna">
-              ☰
-            </button>
-            <div>
-              <div class="eyebrow-row">
-                <span class="eyebrow" id="topbarEyebrow">PANEL CENTRAL ORGANIZADO</span>
-                <span class="neon-pill-mini" id="headerDatasetBadge">1,324 EJERCICIOS · 131 RECETAS</span>
-              </div>
-              <h1 id="topbarTitle">Dashboard General</h1>
-            </div>
-          </div>
-
-          <div class="topbar-controls">
-            <!-- Global Rest / Exercise Timer Pill -->
-            <div class="rest-timer-widget" id="restTimerWidget">
-              <div class="rest-timer-top">
-                <span class="rest-timer-label" id="globalTimerLabel">⏱️ Timer Activo</span>
-                <strong class="rest-timer-display" id="restTimerDisplay">00:00</strong>
-              </div>
-              <div class="rest-timer-buttons">
-                <button type="button" class="timer-btn" data-timer-sec="60">60s</button>
-                <button type="button" class="timer-btn" data-timer-sec="90">90s</button>
-                <button type="button" class="timer-btn" data-timer-sec="120">2m</button>
-                <button type="button" class="timer-btn" data-timer-sec="180">3m</button>
-                <button type="button" class="timer-btn timer-stop" id="restTimerReset" title="Reiniciar">✕</button>
-              </div>
-            </div>
-
-            <div class="profile-switcher">
-              <div class="profile-switcher-row">
-                <select id="profileSelect" aria-label="Seleccionar perfil"></select>
-                <button id="newProfileBtn" class="secondary btn-icon" type="button" title="Crear nuevo perfil">+ Perfil</button>
-                <button id="exportProfileJsonBtn" class="secondary btn-icon" type="button" title="Descargar perfil y progreso en .json para llevar a otro dispositivo">⬇️ .JSON</button>
-                <button id="importProfileJsonBtn" class="secondary btn-icon" type="button" title="Cargar archivo .json de perfil desde otro dispositivo">⬆️ Cargar</button>
-                <input type="file" id="importJsonFileInput" accept=".json,application/json" hidden />
-                <button id="topbarInstallBtn" class="secondary btn-icon" type="button" title="Instalar App en tu dispositivo">📲 Instalar</button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <main id="app" class="content" tabindex="-1"></main>
+        <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn"
+          title="Contraer o expandir menú izquierdo">
+          ◀
+        </button>
       </div>
-    </div>
 
-    <!-- Exercise 360° Detail, Built-In Exercise Timer & Logger Modal -->
-    <div id="exerciseModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalExTitle" hidden>
-      <div class="modal-panel neon-modal">
-        <div class="modal-header">
+      <nav class="sidebar-nav" aria-label="Secciones de la aplicación">
+        <button class="nav-item is-active" type="button" data-view="dashboard" title="Dashboard Resumen">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" type="button" data-view="workout" title="Entrenar Hoy (Estilo Hevy/JEFIT)">
+          <span class="nav-icon">🏋️</span>
+          <span class="nav-label">Entrenar Hoy</span>
+          <span class="nav-badge" id="navTodayCount">8</span>
+        </button>
+        <button class="nav-item" type="button" data-view="programs"
+          title="Programas y Generador (Boostcamp / WorkoutGen)">
+          <span class="nav-icon">🏆</span>
+          <span class="nav-label">Programas</span>
+        </button>
+        <button class="nav-item" type="button" data-view="library"
+          title="Biblioteca de 1,324 Ejercicios (Entrenamientos.com)">
+          <span class="nav-icon">📚</span>
+          <span class="nav-label">Ejercicios</span>
+          <span class="nav-badge" id="navExerciseCount">1324</span>
+        </button>
+        <button class="nav-item" type="button" data-view="nutrition" title="Recetario Keto Transcrito (131 Recetas)">
+          <span class="nav-icon">🥑</span>
+          <span class="nav-label">Plan Keto</span>
+          <span class="nav-badge" id="navRecipeCount">131</span>
+        </button>
+        <button class="nav-item" type="button" data-view="profile" title="Mi Perfil, Altura, IMC e Historial">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">Perfil &amp; IMC</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button type="button" class="install-app-btn" id="installAppBtn" title="Instalar aplicación en Celular o PC">
+          <span class="nav-icon">📲</span>
+          <span class="nav-label">Instalar App</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="app-main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-sidebar-toggle" id="mobileSidebarToggle"
+            title="Contraer/Expandir columna">
+            ☰
+          </button>
           <div>
-            <span class="eyebrow" id="modalExMetaTop">FICHA TÉCNICA &amp; CRONÓMETRO INTEGRADO</span>
-            <h2 id="modalExTitle">Ejercicio</h2>
-            <p class="muted" id="modalExSubtitle"></p>
+            <div class="eyebrow-row">
+              <span class="eyebrow" id="topbarEyebrow">PANEL CENTRAL ORGANIZADO</span>
+              <span class="neon-pill-mini" id="headerDatasetBadge">1,324 EJERCICIOS · 131 RECETAS</span>
+            </div>
+            <h1 id="topbarTitle">Dashboard General</h1>
           </div>
-          <button type="button" class="modal-close-btn" id="closeExerciseModal" aria-label="Cerrar ventana">✕</button>
         </div>
-        <div class="modal-body" id="modalExBody"></div>
-      </div>
-    </div>
 
-    <!-- Recipe Step-by-Step Reader Modal -->
-    <div id="recipeModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="recipeModalTitle" hidden>
-      <div class="modal-panel neon-modal">
-        <div class="modal-header">
-          <div>
-            <span class="eyebrow" id="recipeModalMeta">RECETA KETO TRANSCRITA PASO A PASO</span>
-            <h2 id="recipeModalTitle">Receta</h2>
+        <div class="topbar-controls">
+          <!-- Global Rest / Exercise Timer Pill -->
+          <div class="rest-timer-widget" id="restTimerWidget">
+            <div class="rest-timer-top">
+              <span class="rest-timer-label" id="globalTimerLabel">⏱️ Timer Activo</span>
+              <strong class="rest-timer-display" id="restTimerDisplay">00:00</strong>
+            </div>
+            <div class="rest-timer-buttons">
+              <button type="button" class="timer-btn" data-timer-sec="60">60s</button>
+              <button type="button" class="timer-btn" data-timer-sec="90">90s</button>
+              <button type="button" class="timer-btn" data-timer-sec="120">2m</button>
+              <button type="button" class="timer-btn" data-timer-sec="180">3m</button>
+              <button type="button" class="timer-btn timer-stop" id="restTimerReset" title="Reiniciar">✕</button>
+            </div>
           </div>
-          <button type="button" class="modal-close-btn" id="closeRecipeModal" aria-label="Cerrar receta">✕</button>
-        </div>
-        <div class="modal-body" id="recipeModalBody"></div>
-      </div>
-    </div>
 
-    <!-- Install App (PWA) Instructions & One-Click Modal -->
-    <div id="installModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="installModalTitle" hidden>
-      <div class="modal-panel neon-modal" style="max-width:580px;">
-        <div class="modal-header">
-          <div>
-            <span class="eyebrow">📲 INSTALAR FITRECORD PRO (CELULAR Y PC)</span>
-            <h2 id="installModalTitle">Instala FitRecord como Aplicación Nativa</h2>
+          <div class="profile-switcher">
+            <div class="profile-switcher-row">
+              <select id="profileSelect" aria-label="Seleccionar perfil"></select>
+              <button id="newProfileBtn" class="secondary btn-icon" type="button" title="Crear nuevo perfil">+
+                Perfil</button>
+              <button id="exportProfileJsonBtn" class="secondary btn-icon" type="button"
+                title="Descargar perfil y progreso en .json para llevar a otro dispositivo">⬇️ .JSON</button>
+              <button id="importProfileJsonBtn" class="secondary btn-icon" type="button"
+                title="Cargar archivo .json de perfil desde otro dispositivo">⬆️ Cargar</button>
+              <input type="file" id="importJsonFileInput" accept=".json,application/json" hidden />
+              <button id="topbarInstallBtn" class="secondary btn-icon" type="button"
+                title="Instalar App en tu dispositivo">📲 Instalar</button>
+            </div>
           </div>
-          <button type="button" class="modal-close-btn" id="closeInstallModal" aria-label="Cerrar">✕</button>
         </div>
-        <div class="modal-body" id="installModalBody"></div>
-      </div>
+      </header>
+
+      <main id="app" class="content" tabindex="-1"></main>
     </div>
+  </div>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <!-- Exercise 360° Detail, Built-In Exercise Timer & Logger Modal -->
+  <div id="exerciseModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalExTitle" hidden>
+    <div class="modal-panel neon-modal">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow" id="modalExMetaTop">FICHA TÉCNICA &amp; CRONÓMETRO INTEGRADO</span>
+          <h2 id="modalExTitle">Ejercicio</h2>
+          <p class="muted" id="modalExSubtitle"></p>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeExerciseModal" aria-label="Cerrar ventana">✕</button>
+      </div>
+      <div class="modal-body" id="modalExBody"></div>
+    </div>
+  </div>
 
-    <script src="data.js?v=fitrecord-neon-v3"></script>
-    <script src="generated-data.js?v=fitrecord-neon-v3"></script>
-    <script src="app.js?v=fitrecord-neon-v3"></script>
-  </body>
+  <!-- Recipe Step-by-Step Reader Modal -->
+  <div id="recipeModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="recipeModalTitle" hidden>
+    <div class="modal-panel neon-modal">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow" id="recipeModalMeta">RECETA KETO TRANSCRITA PASO A PASO</span>
+          <h2 id="recipeModalTitle">Receta</h2>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeRecipeModal" aria-label="Cerrar receta">✕</button>
+      </div>
+      <div class="modal-body" id="recipeModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Install App (PWA) Instructions & One-Click Modal -->
+  <div id="installModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="installModalTitle"
+    hidden>
+    <div class="modal-panel neon-modal" style="max-width:580px;">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">📲 INSTALAR FITRECORD PRO (CELULAR Y PC)</span>
+          <h2 id="installModalTitle">Instala FitRecord como Aplicación Nativa</h2>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeInstallModal" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body" id="installModalBody"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js?v=fitrecord-neon-v3"></script>
+  <script src="generated-data.js?v=fitrecord-neon-v3"></script>
+  <script src="app.js?v=fitrecord-neon-v3"></script>
+</body>
+
 </html>
