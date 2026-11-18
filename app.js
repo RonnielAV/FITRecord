@@ -137,6 +137,67 @@
     'Antebrazos'
   ];
 
+  // Clear, Beginner-Friendly Explanations for Personal Goals
+  const GOAL_OPTIONS = [
+    {
+      id: 'recomposicion',
+      icon: '🔄',
+      title: 'Recomposición Corporal',
+      simpleTitle: 'Bajar grasa y tonificar músculo a la vez',
+      whatIsIt: 'Pierdes grasa acumulada mientras ganas firmeza y tono muscular poco a poco, sin dietas extremas.',
+      whoIsItFor: 'Ideal si estás empezando (novato), tienes algo de grasa o barriga pero también quieres verte más firme y fuerte.',
+      appAction: 'Ajusta tus calorías un -8% debajo de tu gasto y sube la proteína para proteger tus músculos.'
+    },
+    {
+      id: 'perdida_grasa',
+      icon: '🔥',
+      title: 'Pérdida de Grasa (Déficit Keto)',
+      simpleTitle: 'Bajar de peso y reducir medidas rápido',
+      whatIsIt: 'Tu prioridad principal es quemar la grasa corporal acumulada y bajar de peso de forma constante.',
+      whoIsItFor: 'Ideal si sientes que tienes sobrepeso y quieres notar cambios más rápidos en la ropa y en la báscula.',
+      appAction: 'Aplica un déficit seguro (-20% calorías) y limita los carbohidratos netos (≤22g) para usar tu grasa como energía.'
+    },
+    {
+      id: 'hipertrofia',
+      icon: '💪',
+      title: 'Fuerza e Hipertrofia Muscular',
+      simpleTitle: 'Aumentar tamaño muscular, volumen y fuerza',
+      whatIsIt: '"Hipertrofia" significa hacer crecer el tamaño de tus músculos (pecho, brazos, piernas, glúteos, espalda).',
+      whoIsItFor: 'Ideal si eres delgado o ya tienes poca grasa y tu meta es ganar volumen corporal y levantar más peso.',
+      appAction: 'Te da un extra de energía (+8% calorías) y máxima proteína (1.1g/lb magra) para construir músculo nuevo.'
+    }
+  ];
+
+  const LEVEL_OPTIONS = [
+    {
+      id: 'novato',
+      icon: '🌱',
+      title: 'Principiante (Novato)',
+      desc: '0 a 6 meses entrenando o retomando. La app elige ejercicios más estables y seguros, y activa las explicaciones en palabras sencillas de todos los términos técnicos.'
+    },
+    {
+      id: 'intermedio',
+      icon: '⚡',
+      title: 'Intermedio',
+      desc: '6 meses a 2 años entrenando con buena técnica. Combina ejercicios compuestos libres, poleas y aislamiento.'
+    },
+    {
+      id: 'avanzado',
+      icon: '🔥',
+      title: 'Avanzado',
+      desc: 'Más de 2 años de experiencia constante. Habilita variantes complejas, mayor volumen y alta demanda neuromuscular.'
+    }
+  ];
+
+  function isNoviceMode(prof) {
+    const p = prof || getActiveProfile();
+    return p.level === 'novato' || !!state.showBeginnerHelp;
+  }
+
+  function getGoalMeta(goalId) {
+    return GOAL_OPTIONS.find((g) => g.id === goalId) || GOAL_OPTIONS[0];
+  }
+
   // Boostcamp / WorkoutGen Inspired Coach Programs
   const COACH_PROGRAMS = [
     {
@@ -924,8 +985,22 @@
     const breakfastRx = RECIPES.find((r) => r.mealType === 'desayuno') || RECIPES[0];
     const lunchRx = RECIPES.find((r) => r.mealType === 'comida') || RECIPES[22];
     const dinnerRx = RECIPES.find((r) => r.mealType === 'cena') || RECIPES[65];
+    const goalMeta = getGoalMeta(prof.goal);
+    const novice = isNoviceMode(prof);
 
     return `
+      ${novice ? `
+        <div class="novice-guide-banner">
+          <div class="novice-guide-top">
+            <strong>🌱 Modo Principiante (Novato) Activo — Explicaciones Sencillas Habilitadas</strong>
+            <span class="tag">Guía Interactiva</span>
+          </div>
+          <p class="muted" style="margin:4px 0 0;font-size:0.8rem;line-height:1.45;">
+            Como tienes seleccionado el nivel <strong>Novato</strong>, la aplicación te explica cada término técnico (como <em>Series, RPE, Masa Magra, IMC, Hipertrofia y Carbos Netos</em>) en palabras simples y prioriza ejercicios seguros para ti.
+          </p>
+        </div>
+      ` : ''}
+
       <div class="dashboard-grid">
         <!-- Panel 1: Entrenamiento de Hoy (Hevy / JEFIT Summary) -->
         <section class="dash-panel">
@@ -942,6 +1017,11 @@
               Nivel: <strong>${escapeHtml(prof.level.toUpperCase())}</strong> ·
               <strong>${routineExercises.length} ej.</strong>
             </p>
+            ${novice ? `
+              <div class="novice-tip-inline" style="margin-bottom:10px;">
+                💡 <strong>¿Cómo leer la lista?</strong> <code>3×12</code> significa hacer el ejercicio <strong>12 veces seguidas</strong>, descansar y repetirlo <strong>3 veces</strong>.
+              </div>
+            ` : ''}
 
             <div style="display:grid;gap:6px;margin-bottom:12px;">
               ${routineExercises.slice(0, 4).map((ex) => `
@@ -1001,6 +1081,11 @@
                 <small>Fuerza total</small>
               </div>
             </div>
+            ${novice ? `
+              <div class="novice-tip-inline" style="margin-top:10px;">
+                💡 <strong>¿Qué es Volumen Fuerza?</strong> Es la suma total del peso que moviste hoy (<em>Series × Repeticiones × Libras</em>). Sirve para ver si te vuelves más fuerte semana a semana.
+              </div>
+            ` : ''}
           </div>
 
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1041,6 +1126,11 @@
                 <small>Tope: ${prof.netCarbTarget || metrics.suggestedNetCarbs}g</small>
               </div>
             </div>
+            ${novice ? `
+              <div class="novice-tip-inline" style="margin-bottom:8px;">
+                💡 <strong>¿Qué son Carbs Netos?</strong> Son los azúcares y harinas que absorbe tu cuerpo (<em>Carbohidratos menos Fibra</em>). Mantenerlos bajos hace que quemes tu propia grasa.
+              </div>
+            ` : ''}
 
             <div style="display:grid;gap:6px;">
               ${[
@@ -1072,7 +1162,7 @@
           <div>
             <div class="dash-panel-header">
               <div>
-                <span class="eyebrow">🧬 PANEL 4 · BIOMETRÍA &amp; SYNC</span>
+                <span class="eyebrow">🧬 PANEL 4 · BIOMETRÍA &amp; OBJETIVO</span>
                 <h3>${escapeHtml(prof.name)} (${formatHeightDisplay(prof.heightIn, prof.heightUnit)})</h3>
               </div>
               <span class="tag">✨ Auto</span>
@@ -1096,15 +1186,16 @@
               </div>
             </div>
 
-            <div style="padding:8px 10px;border-radius:10px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.2);font-size:0.78rem;color:#d9ecdc;line-height:1.4;">
-              <div><strong>🛠️ Herramientas hoy:</strong> ${escapeHtml(toolsText)}</div>
-              <div><strong>🩹 Protección articular:</strong> ${prof.injuryTags.length ? prof.injuryTags.join(', ') : 'Ninguna lesión activa'}</div>
+            <div style="padding:8px 10px;border-radius:10px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.2);font-size:0.78rem;color:#d9ecdc;line-height:1.45;">
+              <div><strong>🎯 Objetivo (${escapeHtml(goalMeta.title)}):</strong> ${escapeHtml(goalMeta.simpleTitle)} — <em>${escapeHtml(goalMeta.whatIsIt)}</em></div>
+              <div style="margin-top:3px;"><strong>🛠️ Herramientas hoy:</strong> ${escapeHtml(toolsText)}</div>
+              ${novice ? `<div style="margin-top:3px;color:var(--green);"><strong>💡 Masa Magra:</strong> Es todo tu cuerpo libre de grasa (músculos y huesos).</div>` : ''}
             </div>
           </div>
 
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="biometria">
-              📏 Biometría
+              🎯 Cambiar Objetivo / Nivel
             </button>
             <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="salud">
               🛡️ Equipo/Salud
@@ -1128,6 +1219,7 @@
     const selectedGroups = getSelectedGroupsForDate(date);
     const routineExercises = getDailyRoutineExercises(date);
     const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
+    const novice = isNoviceMode(prof);
 
     if (!state.openWorkoutExerciseId && routineExercises.length > 0) {
       state.openWorkoutExerciseId = routineExercises[0].id;
@@ -1141,6 +1233,9 @@
           <strong>${escapeHtml(selectedGroups.join(' + '))}</strong>
         </div>
         <div class="compact-section-bar-actions">
+          <button type="button" class="secondary ${novice ? 'is-active' : ''}" style="${novice ? 'border-color:var(--green);color:var(--green);' : ''}" data-action="toggle-beginner-help" title="Mostrar u ocultar explicaciones sencillas para principiantes">
+            🌱 ${novice ? 'Guía Novato: ON' : 'Guía Novato'}
+          </button>
           <button type="button" data-action="export-workout-pdf" title="Extraer en PDF el entrenamiento de hoy incluyendo todos los links de YouTube y de la app">
             📄 Descargar Rutina Hoy en PDF (con Links)
           </button>
@@ -1148,6 +1243,28 @@
           <button type="button" class="secondary" data-action="switch-view" data-view="library">+ Agregar</button>
         </div>
       </div>
+
+      ${novice ? `
+        <div class="novice-guide-banner" style="margin-bottom:10px;">
+          <div class="novice-guide-top">
+            <strong>🌱 Guía Rápida de Entrenamiento para Principiantes</strong>
+          </div>
+          <div class="novice-glossary-grid">
+            <div class="novice-glossary-item">
+              <strong>🔢 ¿Qué es Series × Reps (ej. 3 × 10)?</strong>
+              <span>Haz el movimiento <strong>10 veces seguidas</strong> (eso es 1 serie). Descansa 60–90 segundos con el Timer y repite ese bloque <strong>3 veces</strong> en total.</span>
+            </div>
+            <div class="novice-glossary-item">
+              <strong>🌡️ ¿Qué es RPE (Esfuerzo del 1 al 10)?</strong>
+              <span>Es qué tan pesado sentiste el ejercicio: <strong>1 = Muy fácil</strong>, <strong>7 u 8 = Ideal para novatos</strong> (terminas sintiendo que podrías hacer 2 o 3 repeticiones más con buena postura), <strong>10 = Al límite</strong>.</span>
+            </div>
+            <div class="novice-glossary-item">
+              <strong>🔥 ¿Qué son los METs?</strong>
+              <span>Mide cuánta energía quema el ejercicio comparado con estar sentado en reposo (1 MET). A más METs y minutos, más calorías quemas.</span>
+            </div>
+          </div>
+        </div>
+      ` : ''}
 
       <!-- Specific Tools Selector Bar (Mancuernas, Barra, Banco & Combo!) -->
       ${renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')}
@@ -1187,7 +1304,7 @@
                     </div>
                     <h3>${escapeHtml(ex.name)}</h3>
                     <span class="muted" style="font-size:0.75rem;">
-                      ${escapeHtml(ex.prescription.sets)} × ${escapeHtml(ex.prescription.reps)}
+                      ${escapeHtml(ex.prescription.sets)} × ${escapeHtml(ex.prescription.reps)} ${novice ? '· (Haz clic para ver guía y timer)' : ''}
                     </span>
                   </div>
                 </div>
@@ -1257,6 +1374,14 @@
                           </div>
                         </div>
 
+                        ${novice ? `
+                          <div class="novice-tip-inline" style="margin-bottom:10px;">
+                            🌱 <strong>Guía Novato para este ejercicio:</strong> ${activeMode === 'time'
+                              ? 'Usa el cronómetro de arriba, mantén un ritmo constante donde puedas respirar bien y en <strong>Esfuerzo RPE</strong> deja <strong>7 u 8</strong>.'
+                              : 'Elige un peso que puedas levantar con control. Haz las repeticiones indicadas, descansa 60–90 segundos y en <strong>Esfuerzo RPE</strong> pon <strong>7 u 8</strong> (que sientas que te quedaban 2 o 3 repeticiones en reserva).'}
+                          </div>
+                        ` : ''}
+
                         <form class="workout-log-form" id="form-ex-${escapeHtml(ex.id)}" data-ex-id="${escapeHtml(ex.id)}" data-mode="${activeMode}">
                           ${activeMode === 'time' ? `
                             <div class="form-grid">
@@ -1273,7 +1398,7 @@
                                 <input type="number" name="sets" min="1" max="20" value="${ex.defaultSets || 1}" data-calc-cal="1" />
                               </div>
                               <div class="field">
-                                <label>RPE (1-10)</label>
+                                <label title="1=Muy fácil, 7-8=Ideal principiante, 10=Esfuerzo máximo">Esfuerzo RPE (1-10) ${novice ? '· 7-8 Ideal' : ''}</label>
                                 <input type="number" name="rpe" min="1" max="10" value="8" data-calc-cal="1" />
                               </div>
                               <div class="field full">
@@ -1284,11 +1409,11 @@
                           ` : `
                             <div class="form-grid">
                               <div class="field">
-                                <label>Series</label>
+                                <label>Series ${novice ? '(Bloques)' : ''}</label>
                                 <input type="number" name="sets" min="1" max="20" value="${ex.defaultSets || 3}" data-calc-cal="1" />
                               </div>
                               <div class="field">
-                                <label>Repeticiones</label>
+                                <label>Repeticiones ${novice ? '(Veces por serie)' : ''}</label>
                                 <input type="number" name="reps" min="1" max="100" value="${ex.defaultReps || 10}" data-calc-cal="1" />
                               </div>
                               <div class="field">
@@ -1296,7 +1421,7 @@
                                 <input type="number" name="weightLb" min="0" max="1500" step="2.5" value="${ex.defaultWeightLb ?? 45}" data-calc-cal="1" />
                               </div>
                               <div class="field">
-                                <label>RPE (1-10)</label>
+                                <label title="1=Muy fácil, 7-8=Ideal principiante (dejar 2-3 reps en reserva), 10=Al límite">Esfuerzo RPE (1-10) ${novice ? '· 7-8 Ideal' : ''}</label>
                                 <input type="number" name="rpe" min="1" max="10" value="8" data-calc-cal="1" />
                               </div>
                               <div class="field full">
@@ -1311,7 +1436,7 @@
                               <span class="eyebrow" style="font-size:0.66rem;">🔥 QUEMA ESTIMADA (${prof.weightLb} LB)</span>
                               <div style="font-size:0.84rem;color:#d9ecdc;">
                                 <strong class="live-cal-value">~${initialCal.kcal} kcal</strong>
-                                <span class="muted live-cal-meta">(${initialCal.activeMinutes} min · ${initialCal.effectiveMet} METs)</span>
+                                <span class="muted live-cal-meta">(${initialCal.activeMinutes} min · ${initialCal.effectiveMet} METs${novice ? ' = intensidad energética' : ''})</span>
                               </div>
                             </div>
                             <button type="submit">
@@ -1341,6 +1466,7 @@
                       ${activeBranch === 'variants' ? `
                         <div class="variant-switcher-box">
                           <strong style="color:var(--green);font-size:0.86rem;">🎯 Alternativas del Mismo Músculo (${escapeHtml(ex.targetEs)})</strong>
+                          ${novice ? `<p class="muted" style="margin:3px 0 6px;font-size:0.76rem;">💡 Si la máquina o herramienta está ocupada, cualquiera de estos ejercicios trabaja exactamente el mismo músculo:</p>` : ''}
                           <div class="variant-grid" style="margin-top:8px;">
                             ${variants.map((v) => `
                               <div class="variant-mini-card" data-action="swap-exercise-variant" data-orig-id="${escapeHtml(ex.swappedFromId || ex.id)}" data-new-id="${escapeHtml(v.id)}">
@@ -1379,13 +1505,70 @@
     const date = state.selectedDate || todayIso();
     const selectedGroups = getSelectedGroupsForDate(date);
     const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
+    const novice = isNoviceMode(prof);
 
     return `
+      <!-- Clear Personal Goals Explainer right in Programs so any Novice knows what to pick! -->
       <section class="panel" style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <div>
-            <span class="eyebrow">GENERADOR POR HERRAMIENTAS Y MÚSCULOS</span>
-            <h3 style="margin:2px 0 0;">1. Selecciona tus Herramientas (Mancuernas, Barra, Banco...)</h3>
+            <span class="eyebrow">🎯 PASO 1 · ¿CUÁL ES TU OBJETIVO PERSONAL? (EXPLICADO EN PALABRAS SIMPLES)</span>
+            <h3 style="margin:2px 0 0;">Elige qué resultado buscas en tu cuerpo</h3>
+          </div>
+          <button type="button" class="secondary" data-action="toggle-beginner-help">
+            🌱 ${novice ? 'Ocultar Guía Novato' : 'Ver Glosario Principiante'}
+          </button>
+        </div>
+
+        <div class="goal-explainer-grid">
+          ${GOAL_OPTIONS.map((g) => {
+            const isSel = prof.goal === g.id;
+            return `
+              <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-personal-goal" data-goal="${escapeHtml(g.id)}">
+                <div class="goal-card-top">
+                  <span class="goal-icon">${g.icon}</span>
+                  <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ TU OBJETIVO ACTUAL' : 'ELEGIR'}</span>
+                </div>
+                <strong>${escapeHtml(g.title)}</strong>
+                <div class="goal-simple-sub">${escapeHtml(g.simpleTitle)}</div>
+                <p>${escapeHtml(g.whatIsIt)}</p>
+                <small>👤 <strong>¿Para quién es?:</strong> ${escapeHtml(g.whoIsItFor)}</small>
+                <small style="color:var(--green);">⚙️ <strong>Efecto en la App:</strong> ${escapeHtml(g.appAction)}</small>
+              </button>
+            `;
+          }).join('')}
+        </div>
+
+        ${novice ? `
+          <div class="novice-guide-banner" style="margin-top:12px;">
+            <strong>🌱 Glosario Rápido de Términos de Gimnasio para Principiantes:</strong>
+            <div class="novice-glossary-grid" style="margin-top:6px;">
+              <div class="novice-glossary-item">
+                <strong>💪 Hipertrofia</strong>
+                <span>Significa aumentar el tamaño y firmeza de tus músculos mediante ejercicios con resistencia (pesas, máquinas o tu cuerpo).</span>
+              </div>
+              <div class="novice-glossary-item">
+                <strong>➡️ Push (Empuje)</strong>
+                <span>Ejercicios donde empujas el peso lejos de ti: trabajan <strong>Pecho, Hombros y Tríceps</strong> (ej. Press en banco, flexiones).</span>
+              </div>
+              <div class="novice-glossary-item">
+                <strong>⬅️ Pull (Tracción / Jalón)</strong>
+                <span>Ejercicios donde jalas el peso hacia ti: trabajan <strong>Espalda, Dorsal y Bíceps</strong> (ej. Remo con mancuerna, polea al pecho).</span>
+              </div>
+              <div class="novice-glossary-item">
+                <strong>🧘 Core / Abdomen</strong>
+                <span>Es toda tu faja abdominal y espalda baja que protege tu columna y mantiene tu postura firme.</span>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      </section>
+
+      <section class="panel" style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <div>
+            <span class="eyebrow">🛠️ PASO 2 · HERRAMIENTAS Y MÚSCULOS PARA HOY</span>
+            <h3 style="margin:2px 0 0;">Selecciona tus Herramientas (Mancuernas, Barra, Banco...)</h3>
           </div>
           <button type="button" data-action="switch-view" data-view="workout">
             ▶️ Ir a Entrenar Hoy
@@ -1394,7 +1577,7 @@
 
         ${renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')}
 
-        <h3 style="margin:12px 0 8px;">2. Selecciona los Músculos para tu Sesión (${selectedGroups.length} activos)</h3>
+        <h3 style="margin:12px 0 8px;">Selecciona los Músculos para tu Sesión (${selectedGroups.length} activos)</h3>
         <div class="group-chip-grid">
           ${ROUTINE_GROUPS.map((grp) => {
             const count = EXERCISES.filter((e) => e.group === grp && matchesSelectedTools(e, activeTools)).length;
@@ -1413,8 +1596,8 @@
       </section>
 
       <section class="panel">
-        <span class="eyebrow">PROGRAMAS PREDISEÑADOS (1 CLIC)</span>
-        <h3 style="margin:4px 0 12px;">Elige una Rutina Completa</h3>
+        <span class="eyebrow">🏆 PASO 3 · PROGRAMAS PREDISEÑADOS (1 CLIC)</span>
+        <h3 style="margin:4px 0 12px;">Elige una Rutina Completa Lista para Seguir</h3>
         <div class="program-grid">
           ${COACH_PROGRAMS.map((prog) => `
             <article class="program-card">
@@ -1560,6 +1743,8 @@
 
   // ── 5. Render: 131 Transcribed Keto Recipes (Fixed Almuerzos + Clean Cards + Step Reader Modal) ──
   function renderNutrition() {
+    const prof = getActiveProfile();
+    const novice = isNoviceMode(prof);
     const nf = state.nutritionFilter;
     const q = (nf.search || '').trim().toLowerCase();
     const activeCat = MEAL_CATEGORIES.find((c) => c.id === nf.mealType) || MEAL_CATEGORIES[0];
@@ -1577,6 +1762,28 @@
     const visible = filtered.slice(0, nf.limit || 24);
 
     return `
+      ${novice ? `
+        <div class="novice-guide-banner" style="margin-bottom:12px;">
+          <div class="novice-guide-top">
+            <strong>🌱 Guía Keto Sencilla para Principiantes</strong>
+          </div>
+          <div class="novice-glossary-grid" style="margin-top:6px;">
+            <div class="novice-glossary-item">
+              <strong>🥑 ¿Qué son los Carbos Netos?</strong>
+              <span>Son los carbohidratos que realmente suben el azúcar en sangre (se calculan restando la <em>Fibra</em> a los carbohidratos totales). Mantenerlos bajos (≤20-25g al día) hace que tu cuerpo queme tu propia grasa como energía.</span>
+            </div>
+            <div class="novice-glossary-item">
+              <strong>🥩 ¿Para qué sirve la Proteína?</strong>
+              <span>Alimenta y repara tus músculos después de entrenar para que no pierdas firmeza mientras bajas de peso.</span>
+            </div>
+            <div class="novice-glossary-item">
+              <strong>🫒 ¿Por qué hay Grasas en Keto?</strong>
+              <span>Al comer pocos azúcares/harinas, las grasas buenas (aguacate, aceite de oliva, salmón, huevos) te dan energía constante sin hambre.</span>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
       <section class="library-console">
         <div class="library-search-row" style="grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(200px,0.6fr));">
           <div class="field">
@@ -1790,20 +1997,63 @@
 
               <div class="field">
                 <label>Tu Nivel de Experiencia</label>
-                <select name="level">
-                  <option value="novato" ${prof.level === 'novato' ? 'selected' : ''}>Principiante (Novato)</option>
-                  <option value="intermedio" ${prof.level === 'intermedio' ? 'selected' : ''}>Intermedio</option>
-                  <option value="avanzado" ${prof.level === 'avanzado' ? 'selected' : ''}>Avanzado</option>
+                <select name="level" id="profileLevelSelect">
+                  <option value="novato" ${prof.level === 'novato' ? 'selected' : ''}>🌱 Principiante (Novato) — Activa guía y explicaciones</option>
+                  <option value="intermedio" ${prof.level === 'intermedio' ? 'selected' : ''}>⚡ Intermedio</option>
+                  <option value="avanzado" ${prof.level === 'avanzado' ? 'selected' : ''}>🔥 Avanzado</option>
                 </select>
               </div>
 
               <div class="field">
                 <label>Objetivo Principal</label>
-                <select name="goal">
-                  <option value="recomposicion" ${prof.goal === 'recomposicion' ? 'selected' : ''}>Recomposición Corporal</option>
-                  <option value="perdida_grasa" ${prof.goal === 'perdida_grasa' ? 'selected' : ''}>Pérdida de Grasa (Déficit Keto)</option>
-                  <option value="hipertrofia" ${prof.goal === 'hipertrofia' ? 'selected' : ''}>Fuerza e Hipertrofia Muscular</option>
+                <select name="goal" id="profileGoalSelect">
+                  <option value="recomposicion" ${prof.goal === 'recomposicion' ? 'selected' : ''}>🔄 Recomposición Corporal (Bajar grasa y tonificar)</option>
+                  <option value="perdida_grasa" ${prof.goal === 'perdida_grasa' ? 'selected' : ''}>🔥 Pérdida de Grasa (Bajar peso y medidas)</option>
+                  <option value="hipertrofia" ${prof.goal === 'hipertrofia' ? 'selected' : ''}>💪 Fuerza e Hipertrofia (Ganar músculo y volumen)</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Beginner-Friendly Visual Explanation of Levels -->
+            <div style="margin-top:16px;">
+              <span class="eyebrow">🌱 ¿QUÉ SIGNIFICA CADA NIVEL DE EXPERIENCIA? (HAZ CLIC PARA ELEGIR)</span>
+              <div class="goal-explainer-grid" style="margin-top:8px;">
+                ${LEVEL_OPTIONS.map((lv) => {
+                  const isSel = prof.level === lv.id;
+                  return `
+                    <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-profile-level" data-level="${escapeHtml(lv.id)}">
+                      <div class="goal-card-top">
+                        <span class="goal-icon">${lv.icon}</span>
+                        <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ NIVEL ACTIVO' : 'SELECCIONAR'}</span>
+                      </div>
+                      <strong>${escapeHtml(lv.title)}</strong>
+                      <p style="margin:4px 0 0;">${escapeHtml(lv.desc)}</p>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Beginner-Friendly Visual Explanation of Personal Goals -->
+            <div style="margin-top:16px;">
+              <span class="eyebrow">🎯 ¿QUÉ SIGNIFICA CADA OBJETIVO PERSONAL? (EXPLICADO PARA PRINCIPIANTES)</span>
+              <div class="goal-explainer-grid" style="margin-top:8px;">
+                ${GOAL_OPTIONS.map((g) => {
+                  const isSel = prof.goal === g.id;
+                  return `
+                    <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-personal-goal" data-goal="${escapeHtml(g.id)}">
+                      <div class="goal-card-top">
+                        <span class="goal-icon">${g.icon}</span>
+                        <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ TU OBJETIVO' : 'ELEGIR'}</span>
+                      </div>
+                      <strong>${escapeHtml(g.title)}</strong>
+                      <div class="goal-simple-sub">${escapeHtml(g.simpleTitle)}</div>
+                      <p>${escapeHtml(g.whatIsIt)}</p>
+                      <small>👤 <strong>¿Cuándo elegirlo?:</strong> ${escapeHtml(g.whoIsItFor)}</small>
+                      <small style="color:var(--green);">⚙️ <strong>Ajuste en la App:</strong> ${escapeHtml(g.appAction)}</small>
+                    </button>
+                  `;
+                }).join('')}
               </div>
             </div>
 
@@ -1817,21 +2067,25 @@
                   <span>% Grasa Corporal (Auto)</span>
                   <strong id="autoBodyFatDisplay">${m.bodyFatPct}%</strong>
                   <small id="autoFatMassDisplay">${m.fatMassLb} lb de grasa</small>
+                  <div class="metric-novice-explain">Qué parte de tu peso es grasa acumulada.</div>
                 </div>
                 <div class="metric">
                   <span>💪 Masa Magra y Muscular</span>
                   <strong id="autoLeanMassDisplay">${m.leanMassLb} lb magras</strong>
                   <small id="autoMuscleMassDisplay">~${m.skeletalMuscleMassLb} lb músculo (${m.skeletalMusclePct}%)</small>
+                  <div class="metric-novice-explain">Todo tu cuerpo libre de grasa (músculos y huesos).</div>
                 </div>
                 <div class="metric">
                   <span>📊 IMC &amp; FFMI</span>
                   <strong id="autoBmiDisplay">${m.bmi} IMC</strong>
                   <small id="autoBmiCatDisplay">${escapeHtml(m.bmiCategory)}</small>
+                  <div class="metric-novice-explain">Relación entre tu peso y tu estatura.</div>
                 </div>
                 <div class="metric">
                   <span>🔥 Meta Diaria Keto</span>
                   <strong id="autoCalTargetDisplay">${m.suggestedCalories} kcal</strong>
                   <small id="autoMacroTargetDisplay">${m.suggestedProtein}g Prot · ${m.suggestedNetCarbs}g Carbs</small>
+                  <div class="metric-novice-explain">Tus calorías, proteína y tope de carbohidratos al día.</div>
                 </div>
               </div>
             </div>
@@ -2167,6 +2421,11 @@
             </div>
 
             <form class="workout-log-form" id="modal-form-ex-${escapeHtml(ex.id)}" data-ex-id="${escapeHtml(ex.id)}" data-mode="${activeMode}">
+              ${isNoviceMode(prof) ? `
+                <div class="novice-tip-inline" style="margin-bottom:10px;">
+                  🌱 <strong>Guía Novato:</strong> <em>Series</em> = bloques que repites. <em>Reps</em> = veces seguidas que haces el movimiento. <em>RPE (1-10)</em> = qué tan difícil se sintió (<strong>7 u 8 es ideal para principiantes</strong>: terminar sintiendo que podías hacer 2 o 3 reps más con buena postura).
+                </div>
+              ` : ''}
               ${activeMode === 'time' ? `
                 <div class="form-grid">
                   <div class="field">
@@ -2182,7 +2441,7 @@
                     <input type="number" name="sets" min="1" max="20" value="${ex.defaultSets || 1}" data-calc-cal="1" />
                   </div>
                   <div class="field">
-                    <label>Intensidad RPE (1-10)</label>
+                    <label>Esfuerzo RPE (1-10) · 7-8 Ideal</label>
                     <input type="number" name="rpe" min="1" max="10" value="8" data-calc-cal="1" />
                   </div>
                   <div class="field full">
@@ -2193,11 +2452,11 @@
               ` : `
                 <div class="form-grid">
                   <div class="field">
-                    <label>Series</label>
+                    <label>Series (Bloques)</label>
                     <input type="number" name="sets" min="1" max="20" value="${ex.defaultSets || 3}" data-calc-cal="1" />
                   </div>
                   <div class="field">
-                    <label>Reps</label>
+                    <label>Reps (Veces por serie)</label>
                     <input type="number" name="reps" min="1" max="100" value="${ex.defaultReps || 10}" data-calc-cal="1" />
                   </div>
                   <div class="field">
@@ -2205,7 +2464,7 @@
                     <input type="number" name="weightLb" min="0" max="1500" step="2.5" value="${ex.defaultWeightLb ?? 45}" data-calc-cal="1" />
                   </div>
                   <div class="field">
-                    <label>RPE (1-10)</label>
+                    <label>Esfuerzo RPE (1-10) · 7-8 Ideal</label>
                     <input type="number" name="rpe" min="1" max="10" value="8" data-calc-cal="1" />
                   </div>
                   <div class="field full">
@@ -2983,6 +3242,44 @@
       triggerImportJsonDialog();
     } else if (action === 'export-workout-pdf') {
       exportTodayWorkoutPdf();
+    } else if (action === 'toggle-beginner-help') {
+      if (prof.level === 'novato') {
+        showToast('🌱 Estás en Nivel Principiante (Novato): las explicaciones sencillas están activas automáticamente.');
+      } else {
+        state.showBeginnerHelp = !state.showBeginnerHelp;
+        saveState();
+        render();
+        showToast(state.showBeginnerHelp ? '🌱 Guía para Principiantes activada' : 'Guía para Principiantes oculta');
+      }
+    } else if (action === 'select-personal-goal') {
+      const gId = actEl.dataset.goal || 'recomposicion';
+      prof.goal = gId;
+      const m = computeProfileMetrics(prof);
+      prof.bodyFatPct = m.bodyFatPct;
+      prof.leanMassLb = m.leanMassLb;
+      prof.caloriesTarget = m.suggestedCalories;
+      prof.proteinTarget = m.suggestedProtein;
+      prof.netCarbTarget = m.suggestedNetCarbs;
+      saveState();
+      render();
+      const gMeta = getGoalMeta(gId);
+      showToast(`${gMeta.icon} Objetivo activo: ${gMeta.title} (${gMeta.simpleTitle})`);
+    } else if (action === 'select-profile-level') {
+      const lv = actEl.dataset.level || 'novato';
+      prof.level = lv;
+      const m = computeProfileMetrics(prof);
+      prof.bodyFatPct = m.bodyFatPct;
+      prof.leanMassLb = m.leanMassLb;
+      prof.caloriesTarget = m.suggestedCalories;
+      prof.proteinTarget = m.suggestedProtein;
+      prof.netCarbTarget = m.suggestedNetCarbs;
+      saveState();
+      render();
+      showToast(
+        lv === 'novato'
+          ? '🌱 Nivel Principiante (Novato) activo: explicaciones sencillas y ejercicios seguros habilitados.'
+          : `⚡ Nivel de experiencia actualizado a: ${lv.toUpperCase()}`
+      );
     } else if (action === 'toggle-workout-tool') {
       const toolId = actEl.dataset.tool;
       if (!Array.isArray(prof.selectedTools)) prof.selectedTools = [];
@@ -3331,6 +3628,33 @@
       saveState();
       render();
       showToast(`📏 Formato de altura cambiado a: ${t.options[t.selectedIndex].text}`);
+    } else if (t.id === 'profileLevelSelect') {
+      prof.level = t.value;
+      const m = computeProfileMetrics(prof);
+      prof.bodyFatPct = m.bodyFatPct;
+      prof.leanMassLb = m.leanMassLb;
+      prof.caloriesTarget = m.suggestedCalories;
+      prof.proteinTarget = m.suggestedProtein;
+      prof.netCarbTarget = m.suggestedNetCarbs;
+      saveState();
+      render();
+      showToast(
+        prof.level === 'novato'
+          ? '🌱 Nivel Principiante (Novato) activo: explicaciones sencillas habilitadas.'
+          : `⚡ Nivel cambiado a: ${prof.level.toUpperCase()}`
+      );
+    } else if (t.id === 'profileGoalSelect') {
+      prof.goal = t.value;
+      const m = computeProfileMetrics(prof);
+      prof.bodyFatPct = m.bodyFatPct;
+      prof.leanMassLb = m.leanMassLb;
+      prof.caloriesTarget = m.suggestedCalories;
+      prof.proteinTarget = m.suggestedProtein;
+      prof.netCarbTarget = m.suggestedNetCarbs;
+      saveState();
+      render();
+      const gMeta = getGoalMeta(prof.goal);
+      showToast(`${gMeta.icon} Objetivo activo: ${gMeta.title} (${gMeta.simpleTitle})`);
     } else if (t.id === 'toggleTapeMeasurements') {
       prof.useTapeMeasurements = !!t.checked;
       const m = computeProfileMetrics(prof);
