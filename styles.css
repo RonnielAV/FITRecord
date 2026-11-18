@@ -2598,39 +2598,364 @@ button {
   }
 
   .app-main-area {
-    padding: 12px 12px 28px;
+    padding: 8px 10px 28px;
   }
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 8px;
   }
 }
 
+/* ── Ultra-Compact Single-Line Topbar & Tool Filter Bar ─── */
+.topbar.topbar-compact {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px 14px;
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(57, 255, 20, 0.22);
+  background: rgba(9, 15, 11, 0.94);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.topbar-title-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.topbar-title-inline h1 {
+  font-size: clamp(0.98rem, 1.5vw, 1.22rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.topbar-sub-pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(57, 255, 20, 0.12);
+  border: 1px solid rgba(57, 255, 20, 0.28);
+  color: var(--green);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.topbar-compact .topbar-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rest-timer-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--green);
+  background: rgba(57, 255, 20, 0.16);
+  box-shadow: 0 0 14px rgba(57, 255, 20, 0.35);
+}
+
+.rest-timer-mini[hidden] {
+  display: none !important;
+}
+
+.rest-timer-mini .rest-timer-display {
+  font-size: 0.88rem;
+}
+
+.timer-mini-stop {
+  min-height: 20px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(255, 92, 122, 0.25);
+  color: #ff99ac;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.topbar-pdf-btn {
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(57, 255, 20, 0.45);
+  background: rgba(57, 255, 20, 0.14);
+  color: var(--green);
+  font-size: 0.75rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.topbar-pdf-btn:hover {
+  background: var(--green);
+  color: #031005;
+}
+
+.profile-switcher-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.profile-switcher-compact select {
+  min-height: 32px;
+  height: 32px;
+  padding: 2px 24px 2px 9px;
+  border-radius: 9px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  max-width: 145px;
+}
+
+.btn-icon-mini {
+  min-height: 32px !important;
+  height: 32px;
+  padding: 0 8px !important;
+  border-radius: 9px !important;
+  font-size: 0.76rem !important;
+}
+
+/* ── Compact Section Action Strip (Replaces bulky .view-header) ── */
+.compact-section-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(57, 255, 20, 0.2);
+  background: rgba(10, 17, 12, 0.92);
+}
+
+.compact-section-bar-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.compact-section-bar-left strong {
+  font-size: 0.92rem;
+  color: #fff;
+}
+
+.compact-section-bar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.compact-section-bar-actions button {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  border-radius: 9px;
+}
+
+/* ── Tool Filter Box (Mancuernas, Barra, Banco & Combo) ──── */
+.tool-filter-panel {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(57, 255, 20, 0.26);
+  background:
+    radial-gradient(circle at top left, rgba(57, 255, 20, 0.12), transparent 60%),
+    rgba(8, 14, 10, 0.95);
+}
+
+.tool-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tool-filter-header span {
+  font-size: 0.74rem;
+  font-weight: 850;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tool-chips-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 31px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(57, 255, 20, 0.24);
+  background: rgba(12, 20, 14, 0.92);
+  color: #d9ecdc;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.tool-chip:hover {
+  border-color: var(--green);
+  color: #fff;
+}
+
+.tool-chip.is-active {
+  border-color: var(--green);
+  background: linear-gradient(90deg, var(--green), var(--green-lime));
+  color: #031005;
+  box-shadow: 0 0 14px rgba(57, 255, 20, 0.35);
+}
+
+.tool-chip.is-combo {
+  border-color: rgba(168, 255, 62, 0.55);
+  background: rgba(57, 255, 20, 0.12);
+  color: var(--green);
+}
+
+.tool-chip.is-combo.is-active {
+  background: linear-gradient(90deg, #39ff14, #b4ff00);
+  color: #031005;
+}
+
 @media (max-width: 740px) {
-  .topbar,
+  .topbar-sub-pill {
+    display: none;
+  }
+
+  .profile-switcher-compact select {
+    max-width: 108px;
+    padding: 2px 18px 2px 6px;
+    font-size: 0.72rem;
+  }
+
+  .topbar.topbar-compact {
+    padding: 6px 10px;
+    min-height: 42px;
+    margin-bottom: 8px;
+  }
+
   .view-header,
-  .selector-header,
-  .hevy-row-summary {
+  .selector-header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .hevy-row-right {
-    justify-content: space-between;
+  .hevy-row-summary {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .hevy-thumb {
+    width: 48px;
+    height: 48px;
+  }
+
+  .hevy-row-title h3 {
+    font-size: 0.92rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+
+  /* Keep stat strips horizontal on mobile so they don't eat vertical space! */
+  .dash-stat-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .dash-stat-box {
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .dash-stat-box strong {
+    font-size: 0.98rem;
+  }
+
+  .recipe-macro-strip {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .library-console {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .library-search-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .library-search-row > .field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .tool-chips-scroll,
+  .library-quick-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tool-chips-scroll::-webkit-scrollbar,
+  .library-quick-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tool-chip,
+  .quick-chip {
+    flex-shrink: 0;
   }
 
   .exercise-card,
   .detail-grid,
   .form-grid,
-  .metrics,
-  .hero-band .metrics,
   .calc-note-grid,
   .group-chip-grid,
   .template-row,
   .yt-options-row,
-  .recipe-columns,
-  .recipe-macro-strip,
-  .dash-stat-strip {
+  .recipe-columns {
     grid-template-columns: 1fr;
   }
 

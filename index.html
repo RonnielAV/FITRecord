@@ -12,7 +12,7 @@
   <link rel="icon" type="image/png" href="assets/icon-192.png" />
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=fitrecord-neon-v3" />
+  <link rel="stylesheet" href="styles.css?v=fitrecord-neon-v3.2" />
 </head>
 
 <body>
@@ -92,50 +92,37 @@
 
     <!-- Main Content Area -->
     <div class="app-main-area">
-      <header class="topbar">
+      <header class="topbar topbar-compact">
         <div class="topbar-left">
           <button type="button" class="mobile-sidebar-toggle" id="mobileSidebarToggle"
             title="Contraer/Expandir columna">
             ☰
           </button>
-          <div>
-            <div class="eyebrow-row">
-              <span class="eyebrow" id="topbarEyebrow">PANEL CENTRAL ORGANIZADO</span>
-              <span class="neon-pill-mini" id="headerDatasetBadge">1,324 EJERCICIOS · 131 RECETAS</span>
-            </div>
-            <h1 id="topbarTitle">Dashboard General</h1>
+          <div class="topbar-title-inline">
+            <h1 id="topbarTitle">🏠 Dashboard</h1>
+            <span class="topbar-sub-pill" id="topbarEyebrow">Resumen</span>
           </div>
         </div>
 
         <div class="topbar-controls">
-          <!-- Global Rest / Exercise Timer Pill -->
-          <div class="rest-timer-widget" id="restTimerWidget">
-            <div class="rest-timer-top">
-              <span class="rest-timer-label" id="globalTimerLabel">⏱️ Timer Activo</span>
-              <strong class="rest-timer-display" id="restTimerDisplay">00:00</strong>
-            </div>
-            <div class="rest-timer-buttons">
-              <button type="button" class="timer-btn" data-timer-sec="60">60s</button>
-              <button type="button" class="timer-btn" data-timer-sec="90">90s</button>
-              <button type="button" class="timer-btn" data-timer-sec="120">2m</button>
-              <button type="button" class="timer-btn" data-timer-sec="180">3m</button>
-              <button type="button" class="timer-btn timer-stop" id="restTimerReset" title="Reiniciar">✕</button>
-            </div>
+          <!-- Floating Mini Timer Pill: ONLY visible when a timer is actively running! -->
+          <div class="rest-timer-mini" id="restTimerWidget" hidden>
+            <span class="rest-timer-mini-icon">⏱️</span>
+            <strong class="rest-timer-display" id="restTimerDisplay">00:00</strong>
+            <button type="button" class="timer-mini-stop" id="restTimerReset" title="Detener timer">✕</button>
           </div>
 
-          <div class="profile-switcher">
-            <div class="profile-switcher-row">
-              <select id="profileSelect" aria-label="Seleccionar perfil"></select>
-              <button id="newProfileBtn" class="secondary btn-icon" type="button" title="Crear nuevo perfil">+
-                Perfil</button>
-              <button id="exportProfileJsonBtn" class="secondary btn-icon" type="button"
-                title="Descargar perfil y progreso en .json para llevar a otro dispositivo">⬇️ .JSON</button>
-              <button id="importProfileJsonBtn" class="secondary btn-icon" type="button"
-                title="Cargar archivo .json de perfil desde otro dispositivo">⬆️ Cargar</button>
-              <input type="file" id="importJsonFileInput" accept=".json,application/json" hidden />
-              <button id="topbarInstallBtn" class="secondary btn-icon" type="button"
-                title="Instalar App en tu dispositivo">📲 Instalar</button>
-            </div>
+          <button type="button" class="topbar-pdf-btn" id="topbarPdfBtn" data-action="export-workout-pdf" title="Descargar Entrenamiento de Hoy en PDF con Links">
+            📄 PDF Hoy
+          </button>
+
+          <div class="profile-switcher-compact">
+            <select id="profileSelect" aria-label="Seleccionar perfil" title="Cambiar perfil activo"></select>
+            <button id="exportProfileJsonBtn" class="secondary btn-icon-mini" type="button"
+              title="Descargar perfil en .JSON">⬇️</button>
+            <button id="importProfileJsonBtn" class="secondary btn-icon-mini" type="button"
+              title="Cargar perfil .JSON">⬆️</button>
+            <input type="file" id="importJsonFileInput" accept=".json,application/json" hidden />
           </div>
         </div>
       </header>

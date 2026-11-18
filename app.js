@@ -39,14 +39,73 @@
   ];
 
   const EQUIPMENT_CHIPS = [
-    { id: 'peso_corporal', label: '🤸 Peso corporal (Sin equipo)', matches: ['body weight', 'assisted'] },
-    { id: 'mancuernas', label: '🏋️ Mancuernas', matches: ['dumbbell', 'kettlebell'] },
+    { id: 'mancuernas', label: '🏋️ Mancuernas', matches: ['dumbbell'] },
     { id: 'barra', label: '🏋️‍♂️ Barra y discos', matches: ['barbell', 'ez barbell', 'olympic barbell', 'trap bar', 'weighted'] },
+    { id: 'banco', label: '🛋️ Banco (Plano / Inclinado / Declinado)', matches: ['bench'] },
+    { id: 'kettlebell', label: '🔔 Pesa Rusa (Kettlebell)', matches: ['kettlebell'] },
+    { id: 'peso_corporal', label: '🤸 Peso corporal (Sin equipo)', matches: ['body weight', 'assisted'] },
     { id: 'maquinas', label: '⚙️ Máquinas de gimnasio', matches: ['leverage machine', 'smith machine', 'sled machine', 'assisted'] },
     { id: 'poleas', label: '⛓️ Poleas / Cables', matches: ['cable', 'rope'] },
     { id: 'bandas', label: '🎗️ Bandas y funcional', matches: ['band', 'resistance band', 'stability ball', 'bosu ball', 'medicine ball', 'wheel roller', 'roller'] },
     { id: 'cardio', label: '🏃 Caminadora / Bici / Elíptica', matches: ['treadmill', 'stationary bike', 'elliptical machine', 'stepmill machine', 'skierg machine', 'upper body ergometer', 'rope'] }
   ];
+
+  // Specific Tool Filters (Multi-select support for Mancuernas, Barra, Banco, etc.)
+  const TOOL_FILTER_OPTIONS = [
+    { id: 'mancuernas', label: '🏋️ Mancuernas', short: 'Mancuernas' },
+    { id: 'barra', label: '🏋️‍♂️ Barra', short: 'Barra' },
+    { id: 'banco', label: '🛋️ Banco', short: 'Banco' },
+    { id: 'kettlebell', label: '🔔 Pesa Rusa', short: 'Kettlebell' },
+    { id: 'poleas', label: '⛓️ Poleas', short: 'Poleas' },
+    { id: 'maquinas', label: '⚙️ Máquinas', short: 'Máquinas' },
+    { id: 'peso_corporal', label: '🤸 Peso Corporal', short: 'Peso Corporal' },
+    { id: 'bandas', label: '🎗️ Bandas / Funcional', short: 'Bandas' },
+    { id: 'cardio', label: '🏃 Cardio / Bici / Caminadora', short: 'Cardio' }
+  ];
+
+  function usesBenchTool(ex) {
+    if (!ex) return false;
+    const txt = `${ex.name || ''} ${ex.englishName || ''} ${(ex.instruction_steps?.es || []).slice(0, 2).join(' ')} ${(ex.instruction_steps?.en || []).slice(0, 2).join(' ')}`.toLowerCase();
+    return /bench|banco|incline|decline|inclinad|declinad|preacher|scott|hip thrust|step-up|box|cajon|cajón|lying|acostado sobre|tumbado en/i.test(txt);
+  }
+
+  function isDumbbellTool(ex) {
+    if (!ex) return false;
+    return ex.equipment === 'dumbbell' || /mancuerna|dumbbell/i.test(`${ex.name || ''} ${ex.englishName || ''}`);
+  }
+
+  function isBarbellTool(ex) {
+    if (!ex) return false;
+    return ['barbell', 'ez barbell', 'olympic barbell', 'trap bar'].includes(ex.equipment) || /\bbarra\b|barbell/i.test(`${ex.name || ''} ${ex.englishName || ''}`);
+  }
+
+  function matchesSpecificTool(ex, toolId) {
+    if (!ex || !toolId || toolId === 'todas') return true;
+    if (toolId === 'mancuernas') return isDumbbellTool(ex);
+    if (toolId === 'barra') return isBarbellTool(ex);
+    if (toolId === 'banco') return usesBenchTool(ex);
+    if (toolId === 'kettlebell') return ex.equipment === 'kettlebell';
+    if (toolId === 'poleas') return ex.modality === 'poleas' || ex.equipment === 'cable' || ex.equipment === 'rope';
+    if (toolId === 'maquinas') return ex.modality === 'maquinas';
+    if (toolId === 'peso_corporal') return ex.modality === 'peso_corporal' || ex.equipment === 'body weight';
+    if (toolId === 'bandas') return ex.modality === 'bandas_funcional';
+    if (toolId === 'cardio') return ex.modality === 'cardio_ergometros';
+    return true;
+  }
+
+  function matchesSelectedTools(ex, toolsArr) {
+    if (!Array.isArray(toolsArr) || toolsArr.length === 0) return true;
+    return toolsArr.some((t) => matchesSpecificTool(ex, t));
+  }
+
+  function getExerciseToolBadges(ex) {
+    const badges = [];
+    if (isDumbbellTool(ex)) badges.push('🏋️ Mancuernas');
+    if (isBarbellTool(ex)) badges.push('🏋️‍♂️ Barra');
+    if (usesBenchTool(ex)) badges.push('🛋️ Banco');
+    if (!badges.length) badges.push(ex.equipmentEs || ex.modalityEs || 'Estándar');
+    return badges;
+  }
 
   const INJURY_CHIPS = [
     { id: 'hombro', label: '🦴 Hombro / Manguito rotador', desc: 'Evita presses trasnuca, fondos profundos y remos al mentón agresivos.' },
@@ -81,11 +140,22 @@
   // Boostcamp / WorkoutGen Inspired Coach Programs
   const COACH_PROGRAMS = [
     {
+      id: 'mbb-pro',
+      title: 'Set Clásico: Mancuernas, Barra y Banco (Fuerza & Hipertrofia)',
+      coach: 'Especial Pesas Libres + Banco',
+      level: 'Todos los niveles',
+      modality: 'pesas_libres',
+      tools: ['mancuernas', 'barra', 'banco'],
+      groups: ['Pectoral', 'Dorsal y espalda', 'Hombros y cuello', 'Bíceps', 'Tríceps'],
+      desc: 'Rutina enfocada 100% en ejercicios con Mancuernas, Barra y Banco (press en banco, remos con mancuerna, curls y extensiones).'
+    },
+    {
       id: 'ppl-push',
       title: 'Push / Empuje Hipertrofia (Estilo Hevy & Boostcamp)',
       coach: 'Programa Clásico Gimnasio · Día 1',
       level: 'Todos los niveles',
       modality: 'todas',
+      tools: [],
       groups: ['Pectoral', 'Hombros y cuello', 'Tríceps'],
       desc: 'Enfocado en pectorales, deltoides y tríceps combinando empujes compuestos y aislamiento.'
     },
@@ -95,6 +165,7 @@
       coach: 'Programa Clásico Gimnasio · Día 2',
       level: 'Todos los niveles',
       modality: 'todas',
+      tools: [],
       groups: ['Dorsal y espalda', 'Bíceps', 'Antebrazos'],
       desc: 'Tracción vertical y horizontal para amplitud dorsal, densidad de espalda y bíceps.'
     },
@@ -104,6 +175,7 @@
       coach: 'Programa Clásico Gimnasio · Día 3',
       level: 'Todos los niveles',
       modality: 'todas',
+      tools: [],
       groups: ['Piernas y glúteos', 'Pantorrillas', 'Abdomen y core'],
       desc: 'Dominantes de rodilla, bisagra de cadera, gemelos y estabilidad abdominal.'
     },
@@ -113,6 +185,7 @@
       coach: 'Ideal Principiantes o Cuidado Articular',
       level: 'Principiante (Novato)',
       modality: 'maquinas',
+      tools: ['maquinas', 'poleas'],
       groups: ['Pectoral', 'Dorsal y espalda', 'Piernas y glúteos'],
       desc: 'Recorrido 100% guiado en máquinas para máxima estabilidad técnica y cero estrés articular.'
     },
@@ -122,6 +195,7 @@
       coach: 'Entrenamiento en Casa o Parque',
       level: 'Todos los niveles',
       modality: 'peso_corporal',
+      tools: ['peso_corporal'],
       groups: ['Pectoral', 'Dorsal y espalda', 'Piernas y glúteos', 'Abdomen y core'],
       desc: 'Trabaja todos los grupos musculares usando únicamente el esfuerzo de tu propio peso corporal.'
     },
@@ -131,6 +205,7 @@
       coach: 'Especial Recomposición & Keto',
       level: 'Todos los niveles',
       modality: 'todas',
+      tools: [],
       groups: ['Cardio y HIIT', 'Piernas y glúteos', 'Abdomen y core'],
       desc: 'Maximiza la oxidación calórica combinando cardio por tiempo (caminadora/bici/HIIT) y grandes grupos musculares.'
     }
@@ -170,6 +245,7 @@
       level: 'intermedio',
       goal: 'recomposicion',
       preferredModality: 'todas',
+      selectedTools: [],
       useTapeMeasurements: false,
       manualBodyCompOverride: false,
       neckIn: 15.5,
@@ -183,7 +259,7 @@
       caloriesTarget: 2150,
       proteinTarget: 155,
       netCarbTarget: 22,
-      equipmentTags: ['peso_corporal', 'mancuernas', 'barra', 'maquinas', 'poleas', 'cardio'],
+      equipmentTags: ['peso_corporal', 'mancuernas', 'barra', 'banco', 'maquinas', 'poleas', 'cardio'],
       injuryTags: [],
       medicalTags: []
     };
@@ -198,6 +274,8 @@
           if (!parsed.activeView || parsed.activeView === 'today') parsed.activeView = 'dashboard';
           if (!parsed.profileSubTab) parsed.profileSubTab = 'biometria';
           if (!parsed.nutritionFilter) parsed.nutritionFilter = { search: '', mealType: 'todos', maxNetCarbs: 99, limit: 24 };
+          if (!parsed.libraryFilter) parsed.libraryFilter = { search: '', group: 'Todos', modality: 'todas', tools: [], level: 'todos', trackingType: 'todos', onlyFavorites: false, limit: 24 };
+          if (!Array.isArray(parsed.libraryFilter.tools)) parsed.libraryFilter.tools = [];
           return parsed;
         }
       }
@@ -226,6 +304,7 @@
         search: '',
         group: 'Todos',
         modality: 'todas',
+        tools: [],
         level: 'todos',
         trackingType: 'todos',
         onlyFavorites: false,
@@ -260,7 +339,8 @@
     if (!p.heightUnit) p.heightUnit = 'ft_in';
     if (typeof p.useTapeMeasurements !== 'boolean') p.useTapeMeasurements = false;
     if (!p.preferredModality) p.preferredModality = 'todas';
-    if (!Array.isArray(p.equipmentTags)) p.equipmentTags = ['peso_corporal', 'mancuernas', 'barra', 'maquinas', 'poleas', 'cardio'];
+    if (!Array.isArray(p.selectedTools)) p.selectedTools = [];
+    if (!Array.isArray(p.equipmentTags)) p.equipmentTags = ['peso_corporal', 'mancuernas', 'barra', 'banco', 'maquinas', 'poleas', 'cardio'];
     if (!Array.isArray(p.injuryTags)) p.injuryTags = [];
     if (!Array.isArray(p.medicalTags)) p.medicalTags = [];
     return p;
@@ -305,6 +385,10 @@
     const text = formatClock(exTimerState.seconds);
     const topDisp = document.getElementById('restTimerDisplay');
     if (topDisp) topDisp.textContent = text;
+    const topWidget = document.getElementById('restTimerWidget');
+    if (topWidget) {
+      topWidget.hidden = !exTimerState.running;
+    }
     document.querySelectorAll('.js-ex-timer-digits').forEach((el) => {
       el.textContent = text;
     });
@@ -553,13 +637,23 @@
     if (!ex) return [];
     const prof = getActiveProfile();
     const injuredJoints = new Set(prof.injuryTags || []);
+    const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
 
     const sameTargetPool = EXERCISES.filter((cand) => {
       if (cand.id === ex.id) return false;
       if (cand.target !== ex.target) return false;
       if (injuredJoints.size > 0 && (cand.jointStress || []).some((j) => injuredJoints.has(j))) return false;
       return true;
+    }).sort((a, b) => {
+      const aTool = activeTools.length ? (matchesSelectedTools(a, activeTools) ? 1 : 0) : 0;
+      const bTool = activeTools.length ? (matchesSelectedTools(b, activeTools) ? 1 : 0) : 0;
+      return bTool - aTool;
     });
+
+    if (activeTools.length > 0) {
+      const toolMatched = sameTargetPool.filter((c) => matchesSelectedTools(c, activeTools));
+      if (toolMatched.length >= limit) return toolMatched.slice(0, limit);
+    }
 
     const byModality = new Map();
     for (const cand of sameTargetPool) {
@@ -598,15 +692,34 @@
 
   function scoreExerciseForProfile(ex, prof, activeModality) {
     let score = 50;
-    const modPref = activeModality && activeModality !== 'todas' ? activeModality : prof.preferredModality;
-    if (modPref && modPref !== 'todas') {
-      if (ex.modality === modPref) score += 40;
-      else score -= 25;
+    const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
+
+    if (activeTools.length > 0) {
+      const matchesAny = matchesSelectedTools(ex, activeTools);
+      if (matchesAny) {
+        score += 70;
+        // Extra bonus if user selected Banco + (Mancuernas or Barra) and the exercise uses both!
+        if (activeTools.includes('banco') && usesBenchTool(ex) && (
+          (activeTools.includes('mancuernas') && isDumbbellTool(ex)) ||
+          (activeTools.includes('barra') && isBarbellTool(ex))
+        )) {
+          score += 35;
+        }
+      } else {
+        score -= 120;
+      }
+    } else {
+      const modPref = activeModality && activeModality !== 'todas' ? activeModality : prof.preferredModality;
+      if (modPref && modPref !== 'todas') {
+        if (ex.modality === modPref) score += 40;
+        else score -= 25;
+      }
     }
 
     const allowedEquips = getAllowedEquipmentsForProfile(prof);
     if (allowedEquips && allowedEquips.size > 0) {
-      if (allowedEquips.has(ex.equipment)) score += 20;
+      const hasBenchTag = (prof.equipmentTags || []).includes('banco');
+      if (allowedEquips.has(ex.equipment) || (hasBenchTag && usesBenchTool(ex))) score += 20;
       else score -= 35;
     }
 
@@ -641,13 +754,19 @@
     const prof = getActiveProfile();
     const groups = getSelectedGroupsForDate(date);
     const activeModality = prof.preferredModality || 'todas';
+    const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
     const picked = [];
     const seenIds = new Set();
 
     const perGroupCount = groups.length <= 2 ? 3 : 2;
     groups.forEach((grp) => {
-      const candidates = EXERCISES
-        .filter((ex) => ex.group === grp)
+      let pool = EXERCISES.filter((ex) => ex.group === grp);
+      if (activeTools.length > 0) {
+        const strictPool = pool.filter((ex) => matchesSelectedTools(ex, activeTools));
+        if (strictPool.length > 0) pool = strictPool;
+      }
+
+      const candidates = pool
         .map((ex) => ({ ex, score: scoreExerciseForProfile(ex, prof, activeModality) }))
         .sort((a, b) => b.score - a.score);
 
@@ -691,13 +810,50 @@
 
   // ── Sidebar & Header Synchronization ──────────────────────
   const VIEW_TITLES = {
-    dashboard: { eyebrow: 'PANEL CENTRAL ORGANIZADO', title: '🏠 Dashboard General' },
-    workout: { eyebrow: 'MODO GIMNASIO (ESTILO HEVY / JEFIT)', title: '🏋️ Entrenar Hoy & Cronómetro' },
-    programs: { eyebrow: 'RUTINAS DE ENTRENADORES (BOOSTCAMP / WORKOUTGEN)', title: '🏆 Programas y Generador' },
-    library: { eyebrow: 'ENCICLOPEDIA ILUSTRADA (ENTRENAMIENTOS.COM)', title: '📚 Biblioteca de 1,324 Ejercicios' },
-    nutrition: { eyebrow: 'NUTRICIÓN CETOGÉNICA 100% TRANSCRITA', title: '🥑 Recetario Keto (131 Recetas)' },
-    profile: { eyebrow: 'BIOMETRÍA AUTO-CALCULABLE Y SALUD', title: '👤 Mi Perfil, Altura, IMC & Historial' }
+    dashboard: { eyebrow: 'Resumen', title: '🏠 Dashboard' },
+    workout: { eyebrow: 'Modo Gym', title: '🏋️ Entrenar Hoy' },
+    programs: { eyebrow: 'Rutinas', title: '🏆 Programas' },
+    library: { eyebrow: '1,324 Ejercicios', title: '📚 Ejercicios' },
+    nutrition: { eyebrow: '131 Recetas', title: '🥑 Plan Keto' },
+    profile: { eyebrow: 'Biometría & Sync', title: '👤 Mi Perfil' }
   };
+
+  function renderToolSelectorBar(selectedTools = [], actionName = 'toggle-workout-tool', comboAction = 'set-workout-mbb-combo', clearAction = 'clear-workout-tools') {
+    const isMbbCombo =
+      selectedTools.includes('mancuernas') &&
+      selectedTools.includes('barra') &&
+      selectedTools.includes('banco') &&
+      selectedTools.length === 3;
+
+    return `
+      <div class="tool-filter-panel">
+        <div class="tool-filter-header">
+          <span>🛠️ Filtrar por Herramientas Disponibles (Puedes marcar varias: Mancuernas, Barra, Banco...)</span>
+          ${selectedTools.length > 0 ? `
+            <button type="button" class="ghost" style="min-height:24px;padding:2px 8px;font-size:0.7rem;" data-action="${clearAction}">
+              ✕ Ver todas (${EXERCISES.length})
+            </button>
+          ` : ''}
+        </div>
+        <div class="tool-chips-scroll">
+          <button type="button" class="tool-chip ${selectedTools.length === 0 ? 'is-active' : ''}" data-action="${clearAction}">
+            ⚡ Todas
+          </button>
+          <button type="button" class="tool-chip is-combo ${isMbbCombo ? 'is-active' : ''}" data-action="${comboAction}" title="Seleccionar Mancuernas + Barra + Banco al mismo tiempo">
+            🔥 Mancuernas + Barra + Banco
+          </button>
+          ${TOOL_FILTER_OPTIONS.map((t) => {
+            const isSel = selectedTools.includes(t.id);
+            return `
+              <button type="button" class="tool-chip ${isSel ? 'is-active' : ''}" data-action="${actionName}" data-tool="${escapeHtml(t.id)}">
+                ${isSel ? '✓ ' : ''}${escapeHtml(t.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
 
   function syncWorkspaceChrome() {
     const ws = document.getElementById('appWorkspace');
@@ -741,6 +897,10 @@
     const metrics = computeProfileMetrics(prof);
     const selectedGroups = getSelectedGroupsForDate(date);
     const routineExercises = getDailyRoutineExercises(date);
+    const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
+    const toolsText = activeTools.length
+      ? activeTools.map((id) => TOOL_FILTER_OPTIONS.find((t) => t.id === id)?.short || id).join(' + ')
+      : (MODALITY_OPTIONS.find((m) => m.id === prof.preferredModality)?.short || 'Todas');
 
     const dayLogs = state.workoutLogs.filter((l) => l.profileId === prof.id && l.date === date);
     const totalKcalBurned = dayLogs.reduce((s, l) => s + (Number(l.caloriesBurned) || 0), 0);
@@ -772,40 +932,43 @@
           <div>
             <div class="dash-panel-header">
               <div>
-                <span class="eyebrow">🏋️ PANEL 1 · TU SESIÓN DE HOY</span>
+                <span class="eyebrow">🏋️ PANEL 1 · ENTRENAMIENTO HOY</span>
                 <h3>${selectedGroups.join(' + ')}</h3>
               </div>
-              <input type="date" id="todayDateInput" value="${escapeHtml(date)}" style="width:auto;min-height:34px;padding:4px 10px;font-size:0.8rem;" />
+              <input type="date" id="todayDateInput" value="${escapeHtml(date)}" style="width:auto;min-height:32px;padding:3px 8px;font-size:0.78rem;" />
             </div>
-            <p class="muted" style="margin:6px 0 12px;font-size:0.86rem;">
-              Modalidad: <strong>${escapeHtml(MODALITY_OPTIONS.find((m) => m.id === prof.preferredModality)?.label || '⚡ Todas')}</strong> ·
+            <p class="muted" style="margin:4px 0 10px;font-size:0.82rem;">
+              Herramientas: <strong style="color:var(--green);">${escapeHtml(toolsText)}</strong> ·
               Nivel: <strong>${escapeHtml(prof.level.toUpperCase())}</strong> ·
-              <strong>${routineExercises.length} ejercicios</strong> listos con cronómetro integrado.
+              <strong>${routineExercises.length} ej.</strong>
             </p>
 
-            <div style="display:grid;gap:8px;margin-bottom:14px;">
+            <div style="display:grid;gap:6px;margin-bottom:12px;">
               ${routineExercises.slice(0, 4).map((ex) => `
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(57,255,20,0.14);">
-                  <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-                    <img src="${escapeHtml(ex.gif_url || ex.image)}" alt="" style="width:38px;height:38px;border-radius:8px;background:#fff;object-fit:contain;" />
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(57,255,20,0.14);">
+                  <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                    <img src="${escapeHtml(ex.gif_url || ex.image)}" alt="" style="width:36px;height:36px;border-radius:8px;background:#fff;object-fit:contain;" />
                     <div style="min-width:0;">
-                      <strong style="display:block;font-size:0.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(ex.name)}</strong>
-                      <span class="muted" style="font-size:0.74rem;">${escapeHtml(ex.targetEs)} · ${escapeHtml(ex.modalityEs)}</span>
+                      <strong style="display:block;font-size:0.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(ex.name)}</strong>
+                      <span class="muted" style="font-size:0.72rem;">${escapeHtml(ex.targetEs)} · ${escapeHtml(getExerciseToolBadges(ex).join(' + '))}</span>
                     </div>
                   </div>
                   <span class="tag">${ex.trackingType === 'reps_weight' ? `${ex.defaultSets}×${ex.defaultReps}` : `⏱️ ${ex.defaultMinutes || 1}m`}</span>
                 </div>
               `).join('')}
-              ${routineExercises.length > 4 ? `<span class="muted" style="font-size:0.78rem;text-align:center;">+ ${routineExercises.length - 4} ejercicios más en tu sesión</span>` : ''}
+              ${routineExercises.length > 4 ? `<span class="muted" style="font-size:0.75rem;text-align:center;">+ ${routineExercises.length - 4} ejercicios más en tu sesión</span>` : ''}
             </div>
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button type="button" style="flex:1;" data-action="switch-view" data-view="workout">
-              ▶️ Iniciar Entrenamiento de Hoy (${routineExercises.length})
+              ▶️ Entrenar (${routineExercises.length})
+            </button>
+            <button type="button" class="secondary" data-action="export-workout-pdf" title="Descargar PDF del entrenamiento de hoy con links">
+              📄 Descargar PDF
             </button>
             <button type="button" class="secondary" data-action="switch-view" data-view="programs">
-              🏆 Cambiar Programa
+              🛠️ Cambiar
             </button>
           </div>
         </section>
@@ -815,40 +978,37 @@
           <div>
             <div class="dash-panel-header">
               <div>
-                <span class="eyebrow">🔥 PANEL 2 · QUEMA CALÓRICA Y PROGRESO</span>
-                <h3>Actividad Registrada Hoy</h3>
+                <span class="eyebrow">🔥 PANEL 2 · QUEMA CALÓRICA HOY</span>
+                <h3>Actividad Registrada</h3>
               </div>
-              <span class="tag">${dayLogs.length} registros</span>
+              <span class="tag">${dayLogs.length} reg.</span>
             </div>
-            <p class="muted" style="margin:6px 0 14px;font-size:0.86rem;">
-              Cada serie por repeticiones o sesión por tiempo (caminadora, bici, HIIT) calcula automáticamente tus calorías quemadas según tus <strong>${prof.weightLb} lb</strong>.
-            </p>
 
-            <div class="dash-stat-strip">
+            <div class="dash-stat-strip" style="margin-top:8px;">
               <div class="dash-stat-box">
-                <span>🔥 Calorías Hoy</span>
+                <span>🔥 Calorías</span>
                 <strong>${totalKcalBurned} kcal</strong>
-                <small>Quemadas en ejercicio</small>
+                <small>Quemadas hoy</small>
               </div>
               <div class="dash-stat-box">
-                <span>⏱️ Tiempo Cardio</span>
+                <span>⏱️ Cardio</span>
                 <strong>${totalTimeMin} min</strong>
-                <small>Caminadora / Bici / HIIT</small>
+                <small>Por tiempo</small>
               </div>
               <div class="dash-stat-box">
-                <span>🏋️ Volumen Fuerza</span>
+                <span>🏋️ Volumen</span>
                 <strong>${totalVolumeLb.toLocaleString()} lb</strong>
-                <small>Series × Reps × Peso</small>
+                <small>Fuerza total</small>
               </div>
             </div>
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button type="button" class="secondary" style="flex:1;" data-action="switch-view" data-view="workout">
-              ⏱️ Registrar Ejercicio o Cardio
+              ⏱️ Registrar Serie / Tiempo
             </button>
             <button type="button" class="ghost" data-action="open-profile-tab" data-subtab="historial">
-              📈 Ver Historial Completo
+              📈 Historial
             </button>
           </div>
         </section>
@@ -858,17 +1018,17 @@
           <div>
             <div class="dash-panel-header">
               <div>
-                <span class="eyebrow">🥑 PANEL 3 · NUTRICIÓN KETO DEL DÍA</span>
-                <h3>Macros &amp; Menú Sugerido</h3>
+                <span class="eyebrow">🥑 PANEL 3 · NUTRICIÓN KETO HOY</span>
+                <h3>Macros &amp; Menú</h3>
               </div>
-              <span class="tag coral">${Math.round(consumed.netCarbs)} / ${prof.netCarbTarget || metrics.suggestedNetCarbs}g Carbs Netos</span>
+              <span class="tag coral">${Math.round(consumed.netCarbs)} / ${prof.netCarbTarget || metrics.suggestedNetCarbs}g Carbs</span>
             </div>
 
-            <div class="dash-stat-strip" style="margin:10px 0 14px;">
+            <div class="dash-stat-strip" style="margin:8px 0 12px;">
               <div class="dash-stat-box">
-                <span>Calorías Keto</span>
+                <span>Kcal Keto</span>
                 <strong>${Math.round(consumed.calories)}</strong>
-                <small>Meta: ${prof.caloriesTarget || metrics.suggestedCalories} kcal</small>
+                <small>Meta: ${prof.caloriesTarget || metrics.suggestedCalories}</small>
               </div>
               <div class="dash-stat-box">
                 <span>Proteína</span>
@@ -876,29 +1036,26 @@
                 <small>Meta: ${prof.proteinTarget || metrics.suggestedProtein}g</small>
               </div>
               <div class="dash-stat-box">
-                <span>Carbos Netos</span>
+                <span>Carbs Netos</span>
                 <strong>${Math.round(consumed.netCarbs)}g</strong>
                 <small>Tope: ${prof.netCarbTarget || metrics.suggestedNetCarbs}g</small>
               </div>
             </div>
 
-            <div style="display:grid;gap:8px;">
+            <div style="display:grid;gap:6px;">
               ${[
                 { label: '🌅 Desayuno', rx: breakfastRx },
                 { label: '☀️ Almuerzo', rx: lunchRx },
                 { label: '🌙 Cena', rx: dinnerRx }
               ].filter((x) => x.rx).map(({ label, rx }) => `
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(57,255,20,0.14);">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(57,255,20,0.14);">
                   <div style="min-width:0;">
-                    <span class="tag" style="font-size:0.68rem;padding:2px 7px;">${label}</span>
-                    <strong style="font-size:0.85rem;margin-left:6px;">${escapeHtml(rx.name)}</strong>
-                    <span class="muted" style="font-size:0.75rem;display:block;margin-top:2px;">
-                      🔥 ${rx.macros?.calories || 0} kcal · 🥑 ${rx.macros?.netCarbs || 0}g carbs netos
-                    </span>
+                    <span class="tag" style="font-size:0.66rem;padding:2px 6px;">${label}</span>
+                    <strong style="font-size:0.82rem;margin-left:4px;">${escapeHtml(rx.name)}</strong>
                   </div>
-                  <div style="display:flex;gap:6px;flex-shrink:0;">
-                    <button type="button" class="secondary" style="min-height:30px;padding:4px 8px;font-size:0.74rem;" data-action="open-recipe-modal" data-recipe-id="${escapeHtml(rx.id)}">📖 Receta</button>
-                    <button type="button" style="min-height:30px;padding:4px 8px;font-size:0.74rem;" data-action="quick-log-recipe" data-recipe-id="${escapeHtml(rx.id)}">+ Hoy</button>
+                  <div style="display:flex;gap:4px;flex-shrink:0;">
+                    <button type="button" class="secondary" style="min-height:28px;padding:3px 7px;font-size:0.72rem;" data-action="open-recipe-modal" data-recipe-id="${escapeHtml(rx.id)}">📖 Ver</button>
+                    <button type="button" style="min-height:28px;padding:3px 7px;font-size:0.72rem;" data-action="quick-log-recipe" data-recipe-id="${escapeHtml(rx.id)}">+ Hoy</button>
                   </div>
                 </div>
               `).join('')}
@@ -906,7 +1063,7 @@
           </div>
 
           <button type="button" class="secondary" style="width:100%;" data-action="switch-view" data-view="nutrition">
-            🥑 Explorar las 131 Recetas Keto (Desayunos, Almuerzos, Cenas y Postres)
+            🥑 Explorar las 131 Recetas Keto
           </button>
         </section>
 
@@ -915,22 +1072,22 @@
           <div>
             <div class="dash-panel-header">
               <div>
-                <span class="eyebrow">🧬 PANEL 4 · BIOMETRÍA &amp; ADAPTACIÓN</span>
+                <span class="eyebrow">🧬 PANEL 4 · BIOMETRÍA &amp; SYNC</span>
                 <h3>${escapeHtml(prof.name)} (${formatHeightDisplay(prof.heightIn, prof.heightUnit)})</h3>
               </div>
-              <span class="tag">✨ Auto-calculado</span>
+              <span class="tag">✨ Auto</span>
             </div>
 
-            <div class="dash-stat-strip" style="margin:10px 0 14px;">
+            <div class="dash-stat-strip" style="margin:8px 0 12px;">
               <div class="dash-stat-box">
-                <span>% Grasa Corporal</span>
+                <span>% Grasa</span>
                 <strong>${metrics.bodyFatPct}%</strong>
-                <small>${metrics.fatMassLb} lb grasa</small>
+                <small>${metrics.fatMassLb} lb</small>
               </div>
               <div class="dash-stat-box">
                 <span>Masa Magra</span>
                 <strong>${metrics.leanMassLb} lb</strong>
-                <small>~${metrics.skeletalMuscleMassLb} lb músculo</small>
+                <small>~${metrics.skeletalMuscleMassLb} lb músc.</small>
               </div>
               <div class="dash-stat-box">
                 <span>IMC / Nivel</span>
@@ -939,25 +1096,24 @@
               </div>
             </div>
 
-            <div style="padding:10px 12px;border-radius:10px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.2);font-size:0.8rem;color:#d9ecdc;line-height:1.45;">
-              <div><strong>🏋️ Equipos activos:</strong> ${prof.equipmentTags.length} grupos seleccionados</div>
+            <div style="padding:8px 10px;border-radius:10px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.2);font-size:0.78rem;color:#d9ecdc;line-height:1.4;">
+              <div><strong>🛠️ Herramientas hoy:</strong> ${escapeHtml(toolsText)}</div>
               <div><strong>🩹 Protección articular:</strong> ${prof.injuryTags.length ? prof.injuryTags.join(', ') : 'Ninguna lesión activa'}</div>
-              <div><strong>🩺 Condiciones médicas:</strong> ${prof.medicalTags.length ? prof.medicalTags.join(', ') : 'Ninguna condición activa'}</div>
             </div>
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="biometria">
-              📏 Altura / Peso
+              📏 Biometría
             </button>
             <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="salud">
-              🛡️ Equipo y Salud
+              🛡️ Equipo/Salud
             </button>
             <button type="button" class="secondary" style="flex:1;border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
-              ⬇️ Descargar .JSON
+              ⬇️ .JSON
             </button>
             <button type="button" class="ghost" style="flex:1;" data-action="trigger-import-json">
-              ⬆️ Cargar .JSON
+              ⬆️ Cargar
             </button>
           </div>
         </section>
@@ -971,35 +1127,30 @@
     const date = state.selectedDate || todayIso();
     const selectedGroups = getSelectedGroupsForDate(date);
     const routineExercises = getDailyRoutineExercises(date);
+    const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
 
     if (!state.openWorkoutExerciseId && routineExercises.length > 0) {
       state.openWorkoutExerciseId = routineExercises[0].id;
     }
 
     return `
-      <div class="view-header">
-        <div>
-          <span class="eyebrow">🏋️ MODO ENTRENAMIENTO ENFOCADO (ESTILO HEVY / JEFIT)</span>
-          <h2>Sesión de Hoy: ${escapeHtml(selectedGroups.join(' + '))}</h2>
-          <p>
-            Haz clic en cualquier ejercicio de tu lista para desplegar su <strong>Cronómetro integrado</strong>, sus <strong>3 videos de YouTube</strong>, sus <strong>variantes del mismo músculo</strong> y registrar tus series o tiempo sin desorden visual.
-          </p>
+      <!-- Compact Action Bar (Replaces bulky paragraph header!) -->
+      <div class="compact-section-bar">
+        <div class="compact-section-bar-left">
+          <span class="tag">${routineExercises.length} ejercicios</span>
+          <strong>${escapeHtml(selectedGroups.join(' + '))}</strong>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button type="button" class="secondary" data-action="switch-view" data-view="programs">🏆 Cambiar Rutina / Modalidad</button>
-          <button type="button" class="secondary" data-action="switch-view" data-view="library">+ Agregar Ejercicio</button>
+        <div class="compact-section-bar-actions">
+          <button type="button" data-action="export-workout-pdf" title="Extraer en PDF el entrenamiento de hoy incluyendo todos los links de YouTube y de la app">
+            📄 Descargar Rutina Hoy en PDF (con Links)
+          </button>
+          <button type="button" class="secondary" data-action="switch-view" data-view="programs">🏆 Músculos / Rutina</button>
+          <button type="button" class="secondary" data-action="switch-view" data-view="library">+ Agregar</button>
         </div>
       </div>
 
-      <!-- Quick Modality Bar right above the workout list -->
-      <div class="library-quick-chips" style="margin:0 0 16px;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(10,16,12,0.9);">
-        <span class="muted" style="font-size:0.78rem;font-weight:800;margin-right:4px;">Entrenar hoy con:</span>
-        ${MODALITY_OPTIONS.map((m) => `
-          <button type="button" class="quick-chip ${(prof.preferredModality || 'todas') === m.id ? 'is-active' : ''}" data-action="select-preferred-modality" data-modality="${escapeHtml(m.id)}">
-            ${escapeHtml(m.short)}
-          </button>
-        `).join('')}
-      </div>
+      <!-- Specific Tools Selector Bar (Mancuernas, Barra, Banco & Combo!) -->
+      ${renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')}
 
       <div class="hevy-workout-list">
         ${routineExercises.map((ex, idx) => {
@@ -1010,6 +1161,7 @@
           const activeBranch = state.cardBranchTabByEx[ex.id] || 'log';
           const ytLinks = getThreeYouTubeLinks(ex);
           const variants = getSameMuscleVariants(ex, 6);
+          const toolBadges = getExerciseToolBadges(ex);
 
           const initialCal = estimateExerciseCalories(ex, {
             mode: activeMode,
@@ -1028,25 +1180,25 @@
                 <div class="hevy-row-left">
                   <img class="hevy-thumb" src="${escapeHtml(ex.gif_url || ex.image)}" alt="${escapeHtml(ex.name)}" loading="lazy" />
                   <div class="hevy-row-title">
-                    <div class="tag-row" style="margin:0 0 4px;">
+                    <div class="tag-row" style="margin:0 0 3px;">
                       <span class="tag">#${idx + 1} · ${escapeHtml(ex.targetEs)}</span>
-                      <span class="tag neutral">${escapeHtml(ex.modalityEs)}</span>
-                      ${ex.trackingType !== 'reps_weight' ? `<span class="tag coral">⏱️ Por Tiempo</span>` : ''}
+                      ${toolBadges.map((tb) => `<span class="tag neutral">${escapeHtml(tb)}</span>`).join('')}
+                      ${ex.trackingType !== 'reps_weight' ? `<span class="tag coral">⏱️ Tiempo</span>` : ''}
                     </div>
                     <h3>${escapeHtml(ex.name)}</h3>
-                    <span class="muted" style="font-size:0.78rem;">
-                      ${escapeHtml(ex.equipmentEs)} · Sugerido: ${escapeHtml(ex.prescription.sets)} × ${escapeHtml(ex.prescription.reps)}
+                    <span class="muted" style="font-size:0.75rem;">
+                      ${escapeHtml(ex.prescription.sets)} × ${escapeHtml(ex.prescription.reps)}
                     </span>
                   </div>
                 </div>
                 <div class="hevy-row-right">
                   ${dayLogs.length > 0
-                    ? `<span class="tag" style="background:var(--green);color:#031005;">✓ ${dayLogs.length} reg. (${dayLogs.reduce((s, l) => s + (l.caloriesBurned || 0), 0)} kcal)</span>`
-                    : `<span class="tag neutral">Pendiente</span>`}
-                  <button type="button" class="secondary" style="min-height:34px;padding:6px 12px;font-size:0.78rem;" data-action="open-exercise-modal" data-ex-id="${escapeHtml(ex.id)}">
-                    🔍 Pantalla Completa
+                    ? `<span class="tag" style="background:var(--green);color:#031005;">✓ ${dayLogs.length}</span>`
+                    : ''}
+                  <button type="button" class="secondary" style="min-height:30px;padding:4px 9px;font-size:0.74rem;" data-action="open-exercise-modal" data-ex-id="${escapeHtml(ex.id)}" title="Abrir en pantalla completa">
+                    🔍
                   </button>
-                  <span style="color:var(--green);font-weight:900;font-size:1rem;">${isOpen ? '▲' : '▼'}</span>
+                  <span style="color:var(--green);font-weight:900;font-size:0.95rem;">${isOpen ? '▲' : '▼'}</span>
                 </div>
               </div>
 
@@ -1082,27 +1234,25 @@
                     <div>
                       <div class="card-branch-tabs" style="margin-top:0;">
                         <button type="button" class="card-branch-tab ${activeBranch === 'log' ? 'is-active' : ''}" data-action="set-card-branch" data-ex-id="${escapeHtml(ex.id)}" data-branch="log">
-                          ${activeMode === 'time' ? '⏱️ Registrar Tiempo y Calorías' : '📝 Registrar Serie y Calorías'}
+                          ${activeMode === 'time' ? '⏱️ Registrar Tiempo' : '📝 Registrar Serie'}
                         </button>
                         <button type="button" class="card-branch-tab ${activeBranch === 'variants' ? 'is-active' : ''}" data-action="set-card-branch" data-ex-id="${escapeHtml(ex.id)}" data-branch="variants">
-                          🔄 Variantes del Mismo Músculo (${variants.length})
+                          🔄 Variantes (${variants.length})
                         </button>
                         <button type="button" class="card-branch-tab ${activeBranch === 'tech' ? 'is-active' : ''}" data-action="set-card-branch" data-ex-id="${escapeHtml(ex.id)}" data-branch="tech">
-                          📋 Instrucciones Paso a Paso
+                          📋 Técnica
                         </button>
                       </div>
 
                       ${activeBranch === 'log' ? `
                         <div class="tracking-mode-bar">
-                          <span class="muted" style="font-size:0.8rem;">
-                            Selecciona cómo medir este ejercicio:
-                          </span>
+                          <span class="muted" style="font-size:0.78rem;">Medición:</span>
                           <div class="tracking-mode-switch">
                             <button type="button" class="tracking-mode-btn ${activeMode === 'time' ? 'is-active' : ''}" data-action="set-tracking-mode" data-ex-id="${escapeHtml(ex.id)}" data-mode="time">
-                              ⏱️ Por Tiempo / Cardio
+                              ⏱️ Por Tiempo
                             </button>
                             <button type="button" class="tracking-mode-btn ${activeMode === 'reps' ? 'is-active' : ''}" data-action="set-tracking-mode" data-ex-id="${escapeHtml(ex.id)}" data-mode="reps">
-                              🏋️ Por Reps y Peso
+                              🏋️ Reps y Peso
                             </button>
                           </div>
                         </div>
@@ -1111,11 +1261,11 @@
                           ${activeMode === 'time' ? `
                             <div class="form-grid">
                               <div class="field">
-                                <label>Duración (Minutos)</label>
+                                <label>Duración (Min)</label>
                                 <input type="number" name="durationMin" min="0" max="300" step="1" value="${ex.defaultMinutes ?? 15}" data-calc-cal="1" />
                               </div>
                               <div class="field">
-                                <label>Segundos extra (s)</label>
+                                <label>Segundos (s)</label>
                                 <input type="number" name="durationSec" min="0" max="59" step="1" value="${ex.defaultSeconds ?? 0}" data-calc-cal="1" />
                               </div>
                               <div class="field">
@@ -1123,11 +1273,11 @@
                                 <input type="number" name="sets" min="1" max="20" value="${ex.defaultSets || 1}" data-calc-cal="1" />
                               </div>
                               <div class="field">
-                                <label>Intensidad RPE (1-10)</label>
+                                <label>RPE (1-10)</label>
                                 <input type="number" name="rpe" min="1" max="10" value="8" data-calc-cal="1" />
                               </div>
                               <div class="field full">
-                                <label>Notas (velocidad, inclinación, resistencia...)</label>
+                                <label>Notas</label>
                                 <input type="text" name="notes" placeholder="Ej. Caminadora 6 km/h o Bicicleta nivel 8" />
                               </div>
                             </div>
@@ -1142,7 +1292,7 @@
                                 <input type="number" name="reps" min="1" max="100" value="${ex.defaultReps || 10}" data-calc-cal="1" />
                               </div>
                               <div class="field">
-                                <label>Peso (lb) ${ex.equipment === 'body weight' ? '(0 = Corporal)' : ''}</label>
+                                <label>Peso (lb) ${ex.equipment === 'body weight' ? '(0=Corp.)' : ''}</label>
                                 <input type="number" name="weightLb" min="0" max="1500" step="2.5" value="${ex.defaultWeightLb ?? 45}" data-calc-cal="1" />
                               </div>
                               <div class="field">
@@ -1150,29 +1300,29 @@
                                 <input type="number" name="rpe" min="1" max="10" value="8" data-calc-cal="1" />
                               </div>
                               <div class="field full">
-                                <label>Notas de la serie</label>
-                                <input type="text" name="notes" placeholder="Ej. Buen control técnico..." />
+                                <label>Notas</label>
+                                <input type="text" name="notes" placeholder="Ej. En banco inclinado con mancuernas..." />
                               </div>
                             </div>
                           `}
 
                           <div class="calorie-burn-banner">
                             <div>
-                              <span class="eyebrow" style="font-size:0.68rem;">🔥 CALORÍAS ESTIMADAS (${prof.weightLb} LB)</span>
-                              <div style="font-size:0.86rem;color:#d9ecdc;">
-                                Quemarás aprox.: <strong class="live-cal-value">~${initialCal.kcal} kcal</strong>
-                                <span class="muted live-cal-meta">(${initialCal.activeMinutes} min activos · ${initialCal.effectiveMet} METs)</span>
+                              <span class="eyebrow" style="font-size:0.66rem;">🔥 QUEMA ESTIMADA (${prof.weightLb} LB)</span>
+                              <div style="font-size:0.84rem;color:#d9ecdc;">
+                                <strong class="live-cal-value">~${initialCal.kcal} kcal</strong>
+                                <span class="muted live-cal-meta">(${initialCal.activeMinutes} min · ${initialCal.effectiveMet} METs)</span>
                               </div>
                             </div>
                             <button type="submit">
-                              ✓ Guardar Registro (+Iniciar Descanso)
+                              ✓ Guardar (+Descanso)
                             </button>
                           </div>
                         </form>
 
                         ${dayLogs.length ? `
                           <div class="logged-sets-box">
-                            <h4>Series / Tiempos registrados hoy (${dayLogs.length})</h4>
+                            <h4>Registrado hoy (${dayLogs.length})</h4>
                             ${dayLogs.map((l) => `
                               <div class="logged-set-item">
                                 <span>
@@ -1190,17 +1340,14 @@
 
                       ${activeBranch === 'variants' ? `
                         <div class="variant-switcher-box">
-                          <strong style="color:var(--green);font-size:0.88rem;">🎯 Alternativas para el Mismo Músculo: ${escapeHtml(ex.targetEs)}</strong>
-                          <p class="muted" style="margin:4px 0 8px;font-size:0.78rem;">
-                            Elige otra modalidad (pesas, máquina, polea o peso corporal) manteniendo exactamente el mismo músculo objetivo:
-                          </p>
-                          <div class="variant-grid">
+                          <strong style="color:var(--green);font-size:0.86rem;">🎯 Alternativas del Mismo Músculo (${escapeHtml(ex.targetEs)})</strong>
+                          <div class="variant-grid" style="margin-top:8px;">
                             ${variants.map((v) => `
                               <div class="variant-mini-card" data-action="swap-exercise-variant" data-orig-id="${escapeHtml(ex.swappedFromId || ex.id)}" data-new-id="${escapeHtml(v.id)}">
                                 <img src="${escapeHtml(v.gif_url || v.image)}" alt="${escapeHtml(v.name)}" />
                                 <div class="variant-mini-info">
                                   <strong>${escapeHtml(v.name)}</strong>
-                                  <small>${escapeHtml(v.modalityEs)}</small>
+                                  <small>${escapeHtml(getExerciseToolBadges(v).join(' + '))}</small>
                                   <span class="muted" style="font-size:0.7rem;">🔄 Usar hoy</span>
                                 </div>
                               </div>
@@ -1231,62 +1378,26 @@
     const prof = getActiveProfile();
     const date = state.selectedDate || todayIso();
     const selectedGroups = getSelectedGroupsForDate(date);
+    const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
 
     return `
-      <div class="view-header">
-        <div>
-          <span class="eyebrow">🏆 PROGRAMAS DE ENTRENADORES Y GENERADOR (ESTILO BOOSTCAMP &amp; WORKOUTGEN)</span>
-          <h2>Elige un Programa Estructurado o Genera tu Tabla a Medida</h2>
-          <p>Selecciona un programa prediseñado con un clic o personaliza tus grupos musculares y modalidad preferida.</p>
-        </div>
-      </div>
-
-      <section class="panel" style="margin-bottom:20px;">
-        <span class="eyebrow">OPCIÓN A · PROGRAMAS LISTOS PARA SEGUIR (ESTILO BOOSTCAMP)</span>
-        <h3 style="margin:4px 0 14px;">Programas Estructurados por Objetivo y Modalidad</h3>
-        <div class="program-grid">
-          ${COACH_PROGRAMS.map((prog) => `
-            <article class="program-card">
-              <div>
-                <div class="tag-row" style="margin-top:0;">
-                  <span class="tag">${escapeHtml(prog.coach)}</span>
-                  <span class="tag neutral">${escapeHtml(prog.level)}</span>
-                </div>
-                <h3 style="margin:6px 0;font-size:1.1rem;">${escapeHtml(prog.title)}</h3>
-                <p class="muted" style="margin:0 0 10px;font-size:0.83rem;line-height:1.45;">${escapeHtml(prog.desc)}</p>
-                <div class="tag-row">
-                  ${prog.groups.map((g) => `<span class="tag coral">${escapeHtml(g)}</span>`).join('')}
-                </div>
-              </div>
-              <button type="button" data-action="activate-coach-program" data-prog-id="${escapeHtml(prog.id)}">
-                ⚡ Activar este Programa para Hoy e Ir a Entrenar
-              </button>
-            </article>
-          `).join('')}
-        </div>
-      </section>
-
-      <section class="panel">
-        <span class="eyebrow">OPCIÓN B · GENERADOR PERSONALIZADO (ESTILO WORKOUTGEN)</span>
-        <h3 style="margin:4px 0 12px;">1. Elige con qué Modalidad de Esfuerzo quieres entrenar</h3>
-        <div class="modality-grid" style="margin-bottom:18px;">
-          ${MODALITY_OPTIONS.map((mod) => {
-            const count = mod.id === 'todas' ? EXERCISES.length : EXERCISES.filter((e) => e.modality === mod.id).length;
-            const isSel = (prof.preferredModality || 'todas') === mod.id;
-            return `
-              <button type="button" class="modality-card ${isSel ? 'is-selected' : ''}" data-action="select-preferred-modality" data-modality="${escapeHtml(mod.id)}">
-                <strong>${escapeHtml(mod.label)}</strong>
-                <span>${escapeHtml(mod.desc)}</span>
-                <span class="tag neutral" style="align-self:flex-start;margin-top:4px;">${count} ejercicios</span>
-              </button>
-            `;
-          }).join('')}
+      <section class="panel" style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <div>
+            <span class="eyebrow">GENERADOR POR HERRAMIENTAS Y MÚSCULOS</span>
+            <h3 style="margin:2px 0 0;">1. Selecciona tus Herramientas (Mancuernas, Barra, Banco...)</h3>
+          </div>
+          <button type="button" data-action="switch-view" data-view="workout">
+            ▶️ Ir a Entrenar Hoy
+          </button>
         </div>
 
-        <h3 style="margin:16px 0 10px;">2. Selecciona los Músculos para tu Sesión (${selectedGroups.length} activos)</h3>
+        ${renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')}
+
+        <h3 style="margin:12px 0 8px;">2. Selecciona los Músculos para tu Sesión (${selectedGroups.length} activos)</h3>
         <div class="group-chip-grid">
           ${ROUTINE_GROUPS.map((grp) => {
-            const count = EXERCISES.filter((e) => e.group === grp).length;
+            const count = EXERCISES.filter((e) => e.group === grp && matchesSelectedTools(e, activeTools)).length;
             const isSel = selectedGroups.includes(grp);
             return `
               <button type="button" class="group-chip ${isSel ? 'is-selected' : ''}" data-action="toggle-day-group" data-group="${escapeHtml(grp)}">
@@ -1299,11 +1410,30 @@
             `;
           }).join('')}
         </div>
+      </section>
 
-        <div class="actions" style="margin-top:18px;">
-          <button type="button" data-action="switch-view" data-view="workout">
-            ▶️ Ver Mi Rutina Generada y Empezar a Entrenar
-          </button>
+      <section class="panel">
+        <span class="eyebrow">PROGRAMAS PREDISEÑADOS (1 CLIC)</span>
+        <h3 style="margin:4px 0 12px;">Elige una Rutina Completa</h3>
+        <div class="program-grid">
+          ${COACH_PROGRAMS.map((prog) => `
+            <article class="program-card">
+              <div>
+                <div class="tag-row" style="margin-top:0;">
+                  <span class="tag">${escapeHtml(prog.coach)}</span>
+                  <span class="tag neutral">${escapeHtml(prog.level)}</span>
+                </div>
+                <h3 style="margin:6px 0;font-size:1.05rem;">${escapeHtml(prog.title)}</h3>
+                <p class="muted" style="margin:0 0 8px;font-size:0.8rem;line-height:1.4;">${escapeHtml(prog.desc)}</p>
+                <div class="tag-row">
+                  ${prog.groups.map((g) => `<span class="tag coral">${escapeHtml(g)}</span>`).join('')}
+                </div>
+              </div>
+              <button type="button" data-action="activate-coach-program" data-prog-id="${escapeHtml(prog.id)}">
+                ⚡ Activar Programa e Ir a Entrenar
+              </button>
+            </article>
+          `).join('')}
         </div>
       </section>
     `;
@@ -1312,16 +1442,18 @@
   // ── 4. Render: 1,324 Exercise Library (Entrenamientos.com Style) ──
   function renderLibrary() {
     const f = state.libraryFilter;
+    if (!Array.isArray(f.tools)) f.tools = [];
     const q = (f.search || '').trim().toLowerCase();
 
     const filtered = EXERCISES.filter((ex) => {
       if (f.onlyFavorites && !state.favorites.includes(ex.id)) return false;
       if (f.group !== 'Todos' && ex.group !== f.group) return false;
+      if (f.tools.length > 0 && !matchesSelectedTools(ex, f.tools)) return false;
       if (f.modality !== 'todas' && ex.modality !== f.modality) return false;
       if (f.level !== 'todos' && ex.difficultyLevel !== f.level) return false;
       if (f.trackingType !== 'todos' && ex.trackingType !== f.trackingType) return false;
       if (q) {
-        const hay = `${ex.id} ${ex.name} ${ex.englishName} ${ex.targetEs} ${ex.equipmentEs} ${ex.group}`.toLowerCase();
+        const hay = `${ex.id} ${ex.name} ${ex.englishName} ${ex.targetEs} ${ex.equipmentEs} ${ex.group} ${getExerciseToolBadges(ex).join(' ')}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -1331,12 +1463,15 @@
 
     return `
       <section class="library-console">
+        <!-- Multi-Select Tool Filter right at the top of the Library! -->
+        ${renderToolSelectorBar(f.tools, 'toggle-lib-tool', 'set-lib-mbb-combo', 'clear-lib-tools')}
+
         <div class="library-search-row">
           <div class="field">
-            <label>Buscar por nombre, músculo o #ID</label>
+            <label>Buscar por nombre, músculo, herramienta o #ID</label>
             <div class="search-input-wrap">
               <span class="search-input-icon">🔍</span>
-              <input type="text" id="libSearchInput" value="${escapeHtml(f.search)}" placeholder="Ej. Press de banca, Pectorales, Caminadora, #0684..." />
+              <input type="text" id="libSearchInput" value="${escapeHtml(f.search)}" placeholder="Ej. Press en banco, Mancuernas, Barra, Remo, #0684..." />
             </div>
           </div>
           <div class="field">
@@ -1347,7 +1482,7 @@
             </select>
           </div>
           <div class="field">
-            <label>Modalidad (Máquina / Pesas / Esfuerzo)</label>
+            <label>Modalidad General</label>
             <select id="libModalitySelect">
               ${MODALITY_OPTIONS.map((m) => `<option value="${escapeHtml(m.id)}" ${f.modality === m.id ? 'selected' : ''}>${escapeHtml(m.label)}</option>`).join('')}
             </select>
@@ -1364,11 +1499,6 @@
         </div>
 
         <div class="library-quick-chips">
-          ${MODALITY_OPTIONS.map((m) => `
-            <button type="button" class="quick-chip ${f.modality === m.id ? 'is-active' : ''}" data-action="set-lib-modality" data-modality="${escapeHtml(m.id)}">
-              ${escapeHtml(m.label)}
-            </button>
-          `).join('')}
           <button type="button" class="quick-chip ${f.trackingType === 'time_cardio' ? 'is-active' : ''}" data-action="toggle-lib-time-cardio">
             ⏱️ Solo Por Tiempo / Cardio
           </button>
@@ -1378,7 +1508,7 @@
         </div>
 
         <div class="library-status-bar">
-          <span class="muted">Mostrando <strong>${visible.length}</strong> de <strong>${filtered.length}</strong> ejercicios</span>
+          <span class="muted">Mostrando <strong>${visible.length}</strong> de <strong>${filtered.length}</strong> ejercicios disponibles</span>
           <button type="button" class="ghost" data-action="reset-lib-filters">Limpiar filtros</button>
         </div>
       </section>
@@ -1386,6 +1516,7 @@
       <div class="catalog-grid">
         ${visible.map((ex) => {
           const isFav = state.favorites.includes(ex.id);
+          const tBadges = getExerciseToolBadges(ex);
           return `
             <article class="catalog-card">
               <div>
@@ -1401,7 +1532,7 @@
                   <div>
                     <div class="tag-row" style="margin-top:0;">
                       <span class="tag">${escapeHtml(ex.targetEs)}</span>
-                      <span class="tag neutral">${escapeHtml(ex.modalityEs)}</span>
+                      ${tBadges.map((tb) => `<span class="tag neutral">${escapeHtml(tb)}</span>`).join('')}
                     </div>
                     <h3 class="catalog-title" data-action="open-exercise-modal" data-ex-id="${escapeHtml(ex.id)}">${escapeHtml(ex.name)}</h3>
                     <p class="catalog-subtitle">${escapeHtml(ex.equipmentEs)} · ${escapeHtml(ex.level)}</p>
@@ -2409,6 +2540,321 @@
     reader.readAsText(file);
   }
 
+  // ── Export Today's Workout to PDF (with Clickable YouTube & App Links!) ──
+  function exportTodayWorkoutPdf() {
+    const prof = getActiveProfile();
+    const date = state.selectedDate || todayIso();
+    const selectedGroups = getSelectedGroupsForDate(date);
+    const routineExercises = getDailyRoutineExercises(date);
+    const metrics = computeProfileMetrics(prof);
+    const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
+    const toolsText = activeTools.length
+      ? activeTools.map((id) => TOOL_FILTER_OPTIONS.find((t) => t.id === id)?.short || id).join(' + ')
+      : (MODALITY_OPTIONS.find((m) => m.id === prof.preferredModality)?.label || 'Todas las herramientas');
+
+    const baseAppUrl = window.location.origin && window.location.origin !== 'null'
+      ? `${window.location.origin}${window.location.pathname}`
+      : 'https://ronnielav.github.io/FITRecord/';
+
+    let totalEstimatedKcal = 0;
+
+    const exercisesHtml = routineExercises.map((ex, idx) => {
+      const defaultMode = ex.trackingType === 'reps_weight' ? 'reps' : 'time';
+      const activeMode = state.trackingModeOverride[ex.id] || defaultMode;
+      const ytLinks = getThreeYouTubeLinks(ex);
+      const toolBadges = getExerciseToolBadges(ex).join(' + ');
+      const dayLogs = state.workoutLogs.filter((l) => l.profileId === prof.id && l.date === date && String(l.exerciseId) === String(ex.id));
+
+      const estCal = estimateExerciseCalories(ex, {
+        mode: activeMode,
+        sets: ex.defaultSets || 3,
+        reps: ex.defaultReps || 10,
+        weightLb: ex.defaultWeightLb ?? 45,
+        durationMin: ex.defaultMinutes ?? 15,
+        durationSec: ex.defaultSeconds ?? 0,
+        rpe: 8
+      });
+      totalEstimatedKcal += estCal.kcal;
+
+      const directExUrl = `${baseAppUrl}#ex=${encodeURIComponent(ex.id)}`;
+      const imgUrl = (ex.gif_url || ex.image || '').startsWith('http')
+        ? (ex.gif_url || ex.image)
+        : new URL(ex.gif_url || ex.image || '', baseAppUrl).href;
+
+      const stepsHtml = (ex.instruction_steps?.es || []).slice(0, 4).map((s) => `<li>${escapeHtml(s)}</li>`).join('');
+      const logsHtml = dayLogs.length
+        ? `<div class="pdf-logged"><strong>Series registradas hoy:</strong> ${dayLogs.map((l) =>
+            l.mode === 'time'
+              ? `${l.durationMin}m ${l.durationSec || 0}s (RPE ${l.rpe}) · ${l.caloriesBurned || 0} kcal`
+              : `${l.sets}×${l.reps} @ ${l.weightLb} lb (RPE ${l.rpe}) · ${l.caloriesBurned || 0} kcal`
+          ).join(' | ')}</div>`
+        : `<div class="pdf-log-boxes">
+            <span>Registro manual:</span>
+            <span class="pdf-box">Serie 1: ___ × ___ lb</span>
+            <span class="pdf-box">Serie 2: ___ × ___ lb</span>
+            <span class="pdf-box">Serie 3: ___ × ___ lb</span>
+            <span class="pdf-box">Serie 4: ___ × ___ lb</span>
+          </div>`;
+
+      return `
+        <div class="pdf-ex-card">
+          <div class="pdf-ex-top">
+            <img class="pdf-ex-img" src="${escapeHtml(imgUrl)}" alt="${escapeHtml(ex.name)}" />
+            <div class="pdf-ex-meta">
+              <div class="pdf-badges">
+                <span class="pdf-badge-primary">#${idx + 1} · ${escapeHtml(ex.targetEs)}</span>
+                <span class="pdf-badge-tool">${escapeHtml(toolBadges)}</span>
+                <span class="pdf-badge-cal">🔥 ~${estCal.kcal} kcal</span>
+              </div>
+              <h3>${escapeHtml(ex.name)} <small>(#${escapeHtml(ex.id)})</small></h3>
+              <p class="pdf-presc">
+                <strong>Prescripción sugerida:</strong>
+                ${activeMode === 'time'
+                  ? `⏱️ ${ex.defaultMinutes || 15} min (${ex.defaultSets || 1} bloque) · Descanso 60s`
+                  : `🏋️ ${ex.prescription?.sets || '3-4'} series × ${ex.prescription?.reps || '8-12'} reps · Descanso ${ex.prescription?.rest || '60-90s'}`}
+              </p>
+              ${logsHtml}
+            </div>
+          </div>
+
+          ${stepsHtml ? `<ol class="pdf-steps">${stepsHtml}</ol>` : ''}
+
+          <div class="pdf-links-row">
+            <strong>🔗 Links Interactivos (Haz clic en el PDF):</strong>
+            <a href="${escapeHtml(directExUrl)}" target="_blank" rel="noopener noreferrer">⚡ Abrir Ejercicio #${escapeHtml(ex.id)} + Timer en App</a>
+            ${ytLinks.map((yt) => `<a href="${escapeHtml(yt.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(yt.label)}</a>`).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const docHtml = `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FitRecord Pro - Rutina ${escapeHtml(date)} - ${escapeHtml(prof.name)}</title>
+  <style>
+    @page { size: A4; margin: 10mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #0e1711;
+      background: #f4f7f5;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .pdf-ActionBar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px 18px;
+      background: #071209;
+      color: #fff;
+      border-bottom: 2px solid #39ff14;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .pdf-ActionBar strong { color: #39ff14; font-size: 14px; }
+    .pdf-ActionBtns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pdf-btn {
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #39ff14;
+      background: #39ff14;
+      color: #041006;
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .pdf-btn.secondary {
+      background: transparent;
+      color: #39ff14;
+    }
+    .pdf-sheet {
+      max-width: 840px;
+      margin: 16px auto;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    }
+    .pdf-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #12331a;
+      margin-bottom: 14px;
+    }
+    .pdf-header h1 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      color: #081c0d;
+    }
+    .pdf-header p { margin: 2px 0; color: #374a3c; font-size: 12px; }
+    .pdf-header a { color: #0c7a22; font-weight: 700; text-decoration: underline; }
+    .pdf-summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #eef7f0;
+      border: 1px solid #b8dfc0;
+    }
+    .pdf-summary-cell span { display: block; font-size: 10px; text-transform: uppercase; color: #496550; font-weight: 700; }
+    .pdf-summary-cell strong { font-size: 13px; color: #081c0d; }
+    .pdf-ex-card {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      border: 1px solid #cddfd1;
+      border-radius: 10px;
+      padding: 11px 13px;
+      margin-bottom: 10px;
+      background: #ffffff;
+    }
+    .pdf-ex-top {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .pdf-ex-img {
+      width: 74px;
+      height: 74px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid #d5e5d8;
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .pdf-ex-meta { flex: 1; min-width: 0; }
+    .pdf-ex-meta h3 { margin: 3px 0; font-size: 14px; color: #07190b; }
+    .pdf-ex-meta h3 small { color: #5b7060; font-weight: 600; font-size: 11px; }
+    .pdf-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+    .pdf-badge-primary { background: #0e2e16; color: #39ff14; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 800; }
+    .pdf-badge-tool { background: #e6f4e9; color: #0f5220; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 700; border: 1px solid #b5dcbe; }
+    .pdf-badge-cal { background: #fff3e0; color: #9c4dcc; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+    .pdf-presc { margin: 3px 0; font-size: 11.5px; color: #243829; }
+    .pdf-log-boxes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; font-size: 10.5px; color: #435949; }
+    .pdf-box { padding: 2px 6px; border: 1px dashed #8eb095; border-radius: 4px; background: #f9fcf9; }
+    .pdf-logged { margin-top: 4px; padding: 3px 7px; background: #e8f8ec; border-radius: 5px; font-size: 11px; color: #0b5c1e; }
+    .pdf-steps { margin: 6px 0 6px 18px; padding: 0; font-size: 11px; color: #2f4234; }
+    .pdf-steps li { margin-bottom: 2px; }
+    .pdf-links-row {
+      margin-top: 7px;
+      padding-top: 6px;
+      border-top: 1px solid #e2ede4;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+    .pdf-links-row a {
+      color: #0b6e22;
+      font-weight: 700;
+      text-decoration: underline;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #edf8f0;
+    }
+    @media print {
+      body { background: #fff; }
+      .pdf-ActionBar { display: none !important; }
+      .pdf-sheet { margin: 0; padding: 0; box-shadow: none; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="pdf-ActionBar">
+    <div>
+      <strong>📄 Vista Previa PDF · Entrenamiento de Hoy (${escapeHtml(date)})</strong>
+      <div style="font-size:12px;color:#cfe6d3;">Todos los links de YouTube y de la App dentro del PDF son 100% cliqueables.</div>
+    </div>
+    <div class="pdf-ActionBtns">
+      <button type="button" class="pdf-btn" onclick="window.print()">🖨️ Guardar como PDF (con Links)</button>
+      <button type="button" class="pdf-btn secondary" onclick="window.close()">✕ Cerrar</button>
+    </div>
+  </div>
+
+  <div class="pdf-sheet">
+    <div class="pdf-header">
+      <div>
+        <h1>FITRECORD PRO — FICHA DE ENTRENAMIENTO DEL DÍA</h1>
+        <p><strong>Atleta:</strong> ${escapeHtml(prof.name)} (${formatHeightDisplay(prof.heightIn, prof.heightUnit)} · ${prof.weightLb} lb · ${metrics.bodyFatPct}% grasa · Nivel ${escapeHtml(prof.level.toUpperCase())})</p>
+        <p><strong>Grupos Musculares:</strong> ${escapeHtml(selectedGroups.join(' + '))}</p>
+        <p><strong>Herramientas Seleccionadas:</strong> ${escapeHtml(toolsText)}</p>
+      </div>
+      <div style="text-align:right;">
+        <p><strong>Fecha:</strong> ${escapeHtml(date)}</p>
+        <p><strong>App Online:</strong> <a href="${escapeHtml(baseAppUrl)}" target="_blank">${escapeHtml(baseAppUrl)}</a></p>
+      </div>
+    </div>
+
+    <div class="pdf-summary-strip">
+      <div class="pdf-summary-cell">
+        <span>Total Ejercicios</span>
+        <strong>${routineExercises.length} ejercicios</strong>
+      </div>
+      <div class="pdf-summary-cell">
+        <span>Herramientas</span>
+        <strong>${escapeHtml(toolsText)}</strong>
+      </div>
+      <div class="pdf-summary-cell">
+        <span>Quema Estimada</span>
+        <strong>~${totalEstimatedKcal} kcal</strong>
+      </div>
+      <div class="pdf-summary-cell">
+        <span>Meta Diaria Keto</span>
+        <strong>${prof.caloriesTarget || metrics.suggestedCalories} kcal · ${prof.proteinTarget || metrics.suggestedProtein}g Prot</strong>
+      </div>
+    </div>
+
+    ${exercisesHtml}
+  </div>
+
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () { window.print(); }, 450);
+    });
+  </script>
+</body>
+</html>`;
+
+    const printWin = window.open('', '_blank');
+    if (printWin && printWin.document) {
+      printWin.document.open();
+      printWin.document.write(docHtml);
+      printWin.document.close();
+      showToast('📄 Generando PDF del entrenamiento de hoy con links cliqueables...');
+    } else {
+      // Fallback if mobile browser blocks popups: download interactive HTML/PDF sheet directly
+      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fitrecord-entrenamiento-${date}.html`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 200);
+      showToast('📄 Ficha descargada. Ábrela para guardar en PDF o tocar sus links.');
+    }
+  }
+
   // ── Main Render Dispatcher ────────────────────────────────
   function render() {
     syncWorkspaceChrome();
@@ -2535,6 +2981,51 @@
       exportFullBackupJson();
     } else if (action === 'trigger-import-json') {
       triggerImportJsonDialog();
+    } else if (action === 'export-workout-pdf') {
+      exportTodayWorkoutPdf();
+    } else if (action === 'toggle-workout-tool') {
+      const toolId = actEl.dataset.tool;
+      if (!Array.isArray(prof.selectedTools)) prof.selectedTools = [];
+      const idx = prof.selectedTools.indexOf(toolId);
+      if (idx >= 0) prof.selectedTools.splice(idx, 1);
+      else prof.selectedTools.push(toolId);
+      state.openWorkoutExerciseId = null;
+      saveState();
+      render();
+      const activeNames = prof.selectedTools.map((id) => TOOL_FILTER_OPTIONS.find((t) => t.id === id)?.short || id).join(' + ');
+      showToast(prof.selectedTools.length ? `🛠️ Herramientas activas: ${activeNames}` : '⚡ Todas las herramientas activadas');
+    } else if (action === 'set-workout-mbb-combo') {
+      prof.selectedTools = ['mancuernas', 'barra', 'banco'];
+      state.openWorkoutExerciseId = null;
+      saveState();
+      render();
+      showToast('🔥 Combo activado: Mancuernas + Barra + Banco');
+    } else if (action === 'clear-workout-tools') {
+      prof.selectedTools = [];
+      state.openWorkoutExerciseId = null;
+      saveState();
+      render();
+      showToast('⚡ Mostrando ejercicios de todas las herramientas');
+    } else if (action === 'toggle-lib-tool') {
+      const toolId = actEl.dataset.tool;
+      if (!Array.isArray(state.libraryFilter.tools)) state.libraryFilter.tools = [];
+      const idx = state.libraryFilter.tools.indexOf(toolId);
+      if (idx >= 0) state.libraryFilter.tools.splice(idx, 1);
+      else state.libraryFilter.tools.push(toolId);
+      state.libraryFilter.limit = 24;
+      saveState();
+      render();
+    } else if (action === 'set-lib-mbb-combo') {
+      state.libraryFilter.tools = ['mancuernas', 'barra', 'banco'];
+      state.libraryFilter.limit = 24;
+      saveState();
+      render();
+      showToast('🔥 Biblioteca filtrada: Mancuernas + Barra + Banco (640 ejercicios)');
+    } else if (action === 'clear-lib-tools') {
+      state.libraryFilter.tools = [];
+      state.libraryFilter.limit = 24;
+      saveState();
+      render();
     } else if (action === 'toggle-workout-accordion') {
       if (e.target.closest('[data-action="open-exercise-modal"]')) return;
       const exId = actEl.dataset.exId;
@@ -2579,6 +3070,7 @@
       if (prog) {
         state.selectedGroupsByDate[date] = prog.groups.slice();
         prof.preferredModality = prog.modality || 'todas';
+        prof.selectedTools = Array.isArray(prog.tools) ? prog.tools.slice() : [];
         state.activeView = 'workout';
         state.openWorkoutExerciseId = null;
         saveState();
@@ -2702,7 +3194,7 @@
       saveState();
       render();
     } else if (action === 'reset-lib-filters') {
-      state.libraryFilter = { search: '', group: 'Todos', modality: 'todas', level: 'todos', trackingType: 'todos', onlyFavorites: false, limit: 24 };
+      state.libraryFilter = { search: '', group: 'Todos', modality: 'todas', tools: [], level: 'todos', trackingType: 'todos', onlyFavorites: false, limit: 24 };
       saveState();
       render();
     } else if (action === 'load-more-exercises') {
@@ -2952,5 +3444,15 @@
     }
   });
 
+  function checkHashExerciseLink() {
+    const hash = window.location.hash || '';
+    const match = hash.match(/ex=([0-9A-Za-z_-]+)/);
+    if (match && match[1] && EXERCISE_BY_ID.has(String(match[1]))) {
+      openExerciseModal(String(match[1]));
+    }
+  }
+  window.addEventListener('hashchange', checkHashExerciseLink);
+
   render();
+  checkHashExerciseLink();
 })();
