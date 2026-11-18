@@ -916,6 +916,37 @@
     `;
   }
 
+  // ── Collapsible Section Accordion System (Mobile-First Vertical Space Saver) ──
+  function getOpenSection(group, defaultId) {
+    if (!state.openSections || typeof state.openSections !== 'object') {
+      state.openSections = {};
+    }
+    if (!(group in state.openSections)) {
+      state.openSections[group] = defaultId;
+    }
+    return state.openSections[group];
+  }
+
+  function renderCollapsibleSection({ group, id, eyebrow, title, summary, isOpen, bodyHtml }) {
+    return `
+      <section class="collapsible-section ${isOpen ? 'is-open' : ''}" data-acc-group="${escapeHtml(group)}" data-acc-id="${escapeHtml(id)}">
+        <button type="button" class="collapsible-header" data-action="toggle-collapsible-section" data-acc-group="${escapeHtml(group)}" data-acc-id="${escapeHtml(id)}" aria-expanded="${isOpen ? 'true' : 'false'}">
+          <div class="collapsible-header-left">
+            ${eyebrow ? `<span class="collapsible-eyebrow">${escapeHtml(eyebrow)}</span>` : ''}
+            <strong class="collapsible-title">${escapeHtml(title)}</strong>
+          </div>
+          <div class="collapsible-header-right">
+            ${summary ? `<span class="collapsible-summary-pill">${escapeHtml(summary)}</span>` : ''}
+            <span class="collapsible-chevron">${isOpen ? '▲' : '▼'}</span>
+          </div>
+        </button>
+        <div class="collapsible-body">
+          ${bodyHtml}
+        </div>
+      </section>
+    `;
+  }
+
   function syncWorkspaceChrome() {
     const ws = document.getElementById('appWorkspace');
     if (ws) ws.classList.toggle('sidebar-collapsed', !!state.sidebarCollapsed);
@@ -951,7 +982,7 @@
     });
   }
 
-  // ── 1. Render: Clean Modular Dashboard (4 Clear Panels, Zero Clutter) ──
+  // ── 1. Render: Clean Modular Dashboard (Collapsible Accordion Sections!) ──
   function renderDashboard() {
     const prof = getActiveProfile();
     const date = state.selectedDate || todayIso();
@@ -987,36 +1018,26 @@
     const dinnerRx = RECIPES.find((r) => r.mealType === 'cena') || RECIPES[65];
     const goalMeta = getGoalMeta(prof.goal);
     const novice = isNoviceMode(prof);
+    const openSec = getOpenSection('dashboard', 'dash-workout');
 
     return `
-      ${novice ? `
-        <div class="novice-guide-banner">
-          <div class="novice-guide-top">
-            <strong>🌱 Modo Principiante (Novato) Activo — Explicaciones Sencillas Habilitadas</strong>
-            <span class="tag">Guía Interactiva</span>
-          </div>
-          <p class="muted" style="margin:4px 0 0;font-size:0.8rem;line-height:1.45;">
-            Como tienes seleccionado el nivel <strong>Novato</strong>, la aplicación te explica cada término técnico (como <em>Series, RPE, Masa Magra, IMC, Hipertrofia y Carbos Netos</em>) en palabras simples y prioriza ejercicios seguros para ti.
-          </p>
-        </div>
-      ` : ''}
-
-      <div class="dashboard-grid">
-        <!-- Panel 1: Entrenamiento de Hoy (Hevy / JEFIT Summary) -->
-        <section class="dash-panel">
-          <div>
-            <div class="dash-panel-header">
-              <div>
-                <span class="eyebrow">🏋️ PANEL 1 · ENTRENAMIENTO HOY</span>
-                <h3>${selectedGroups.join(' + ')}</h3>
-              </div>
-              <input type="date" id="todayDateInput" value="${escapeHtml(date)}" style="width:auto;min-height:32px;padding:3px 8px;font-size:0.78rem;" />
+      <div class="collapsible-stack">
+        ${renderCollapsibleSection({
+          group: 'dashboard',
+          id: 'dash-workout',
+          eyebrow: 'PANEL 1 · SESIÓN ACTIVA',
+          title: `🏋️ Entrenamiento de Hoy: ${selectedGroups.join(' + ')}`,
+          summary: `${routineExercises.length} ej. · ${toolsText}`,
+          isOpen: openSec === 'dash-workout',
+          bodyHtml: `
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+              <span class="muted" style="font-size:0.8rem;">
+                Herramientas: <strong style="color:var(--green);">${escapeHtml(toolsText)}</strong> ·
+                Nivel: <strong>${escapeHtml(prof.level.toUpperCase())}</strong>
+              </span>
+              <input type="date" id="todayDateInput" value="${escapeHtml(date)}" style="width:auto;min-height:30px;padding:2px 8px;font-size:0.76rem;" />
             </div>
-            <p class="muted" style="margin:4px 0 10px;font-size:0.82rem;">
-              Herramientas: <strong style="color:var(--green);">${escapeHtml(toolsText)}</strong> ·
-              Nivel: <strong>${escapeHtml(prof.level.toUpperCase())}</strong> ·
-              <strong>${routineExercises.length} ej.</strong>
-            </p>
+
             ${novice ? `
               <div class="novice-tip-inline" style="margin-bottom:10px;">
                 💡 <strong>¿Cómo leer la lista?</strong> <code>3×12</code> significa hacer el ejercicio <strong>12 veces seguidas</strong>, descansar y repetirlo <strong>3 veces</strong>.
@@ -1038,33 +1059,30 @@
               `).join('')}
               ${routineExercises.length > 4 ? `<span class="muted" style="font-size:0.75rem;text-align:center;">+ ${routineExercises.length - 4} ejercicios más en tu sesión</span>` : ''}
             </div>
-          </div>
 
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" style="flex:1;" data-action="switch-view" data-view="workout">
-              ▶️ Entrenar (${routineExercises.length})
-            </button>
-            <button type="button" class="secondary" data-action="export-workout-pdf" title="Descargar PDF del entrenamiento de hoy con links">
-              📄 Descargar PDF
-            </button>
-            <button type="button" class="secondary" data-action="switch-view" data-view="programs">
-              🛠️ Cambiar
-            </button>
-          </div>
-        </section>
-
-        <!-- Panel 2: Calorías Quemadas & Rendimiento -->
-        <section class="dash-panel">
-          <div>
-            <div class="dash-panel-header">
-              <div>
-                <span class="eyebrow">🔥 PANEL 2 · QUEMA CALÓRICA HOY</span>
-                <h3>Actividad Registrada</h3>
-              </div>
-              <span class="tag">${dayLogs.length} reg.</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" style="flex:1;" data-action="switch-view" data-view="workout">
+                ▶️ Entrenar (${routineExercises.length})
+              </button>
+              <button type="button" class="secondary" data-action="export-workout-pdf" title="Descargar PDF del entrenamiento de hoy con links">
+                📄 Descargar PDF
+              </button>
+              <button type="button" class="secondary" data-action="switch-view" data-view="programs">
+                🛠️ Cambiar
+              </button>
             </div>
+          `
+        })}
 
-            <div class="dash-stat-strip" style="margin-top:8px;">
+        ${renderCollapsibleSection({
+          group: 'dashboard',
+          id: 'dash-calories',
+          eyebrow: 'PANEL 2 · RENDIMIENTO',
+          title: '🔥 Quema Calórica y Volumen de Hoy',
+          summary: `${totalKcalBurned} kcal · ${totalVolumeLb.toLocaleString()} lb`,
+          isOpen: openSec === 'dash-calories',
+          bodyHtml: `
+            <div class="dash-stat-strip" style="margin-bottom:10px;">
               <div class="dash-stat-box">
                 <span>🔥 Calorías</span>
                 <strong>${totalKcalBurned} kcal</strong>
@@ -1082,34 +1100,30 @@
               </div>
             </div>
             ${novice ? `
-              <div class="novice-tip-inline" style="margin-top:10px;">
-                💡 <strong>¿Qué es Volumen Fuerza?</strong> Es la suma total del peso que moviste hoy (<em>Series × Repeticiones × Libras</em>). Sirve para ver si te vuelves más fuerte semana a semana.
+              <div class="novice-tip-inline" style="margin-bottom:10px;">
+                💡 <strong>¿Qué es Volumen Fuerza?</strong> Es la suma total del peso que moviste hoy (<em>Series × Repeticiones × Libras</em>).
               </div>
             ` : ''}
-          </div>
-
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="secondary" style="flex:1;" data-action="switch-view" data-view="workout">
-              ⏱️ Registrar Serie / Tiempo
-            </button>
-            <button type="button" class="ghost" data-action="open-profile-tab" data-subtab="historial">
-              📈 Historial
-            </button>
-          </div>
-        </section>
-
-        <!-- Panel 3: Nutrición Keto del Día (Con Almuerzos Incluidos) -->
-        <section class="dash-panel">
-          <div>
-            <div class="dash-panel-header">
-              <div>
-                <span class="eyebrow">🥑 PANEL 3 · NUTRICIÓN KETO HOY</span>
-                <h3>Macros &amp; Menú</h3>
-              </div>
-              <span class="tag coral">${Math.round(consumed.netCarbs)} / ${prof.netCarbTarget || metrics.suggestedNetCarbs}g Carbs</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" class="secondary" style="flex:1;" data-action="switch-view" data-view="workout">
+                ⏱️ Registrar Serie / Tiempo
+              </button>
+              <button type="button" class="ghost" data-action="open-profile-tab" data-subtab="historial">
+                📈 Historial (${dayLogs.length})
+              </button>
             </div>
+          `
+        })}
 
-            <div class="dash-stat-strip" style="margin:8px 0 12px;">
+        ${renderCollapsibleSection({
+          group: 'dashboard',
+          id: 'dash-keto',
+          eyebrow: 'PANEL 3 · PLAN CETOGÉNICO',
+          title: '🥑 Nutrición Keto y Menú del Día',
+          summary: `${Math.round(consumed.netCarbs)}/${prof.netCarbTarget || metrics.suggestedNetCarbs}g Carbs · ${Math.round(consumed.calories)} kcal`,
+          isOpen: openSec === 'dash-keto',
+          bodyHtml: `
+            <div class="dash-stat-strip" style="margin-bottom:10px;">
               <div class="dash-stat-box">
                 <span>Kcal Keto</span>
                 <strong>${Math.round(consumed.calories)}</strong>
@@ -1128,11 +1142,11 @@
             </div>
             ${novice ? `
               <div class="novice-tip-inline" style="margin-bottom:8px;">
-                💡 <strong>¿Qué son Carbs Netos?</strong> Son los azúcares y harinas que absorbe tu cuerpo (<em>Carbohidratos menos Fibra</em>). Mantenerlos bajos hace que quemes tu propia grasa.
+                💡 <strong>¿Qué son Carbs Netos?</strong> Son los azúcares y harinas que absorbe tu cuerpo (<em>Carbohidratos menos Fibra</em>).
               </div>
             ` : ''}
 
-            <div style="display:grid;gap:6px;">
+            <div style="display:grid;gap:6px;margin-bottom:10px;">
               ${[
                 { label: '🌅 Desayuno', rx: breakfastRx },
                 { label: '☀️ Almuerzo', rx: lunchRx },
@@ -1150,25 +1164,22 @@
                 </div>
               `).join('')}
             </div>
-          </div>
 
-          <button type="button" class="secondary" style="width:100%;" data-action="switch-view" data-view="nutrition">
-            🥑 Explorar las 131 Recetas Keto
-          </button>
-        </section>
+            <button type="button" class="secondary" style="width:100%;" data-action="switch-view" data-view="nutrition">
+              🥑 Explorar las 131 Recetas Keto
+            </button>
+          `
+        })}
 
-        <!-- Panel 4: Biometría Auto-Calculada & Escudo de Salud -->
-        <section class="dash-panel">
-          <div>
-            <div class="dash-panel-header">
-              <div>
-                <span class="eyebrow">🧬 PANEL 4 · BIOMETRÍA &amp; OBJETIVO</span>
-                <h3>${escapeHtml(prof.name)} (${formatHeightDisplay(prof.heightIn, prof.heightUnit)})</h3>
-              </div>
-              <span class="tag">✨ Auto</span>
-            </div>
-
-            <div class="dash-stat-strip" style="margin:8px 0 12px;">
+        ${renderCollapsibleSection({
+          group: 'dashboard',
+          id: 'dash-bio',
+          eyebrow: 'PANEL 4 · PERFIL, OBJETIVO & SYNC',
+          title: `🧬 ${prof.name} (${formatHeightDisplay(prof.heightIn, prof.heightUnit)})`,
+          summary: `${metrics.bodyFatPct}% Grasa · ${metrics.leanMassLb} lb Magra`,
+          isOpen: openSec === 'dash-bio',
+          bodyHtml: `
+            <div class="dash-stat-strip" style="margin-bottom:10px;">
               <div class="dash-stat-box">
                 <span>% Grasa</span>
                 <strong>${metrics.bodyFatPct}%</strong>
@@ -1186,28 +1197,28 @@
               </div>
             </div>
 
-            <div style="padding:8px 10px;border-radius:10px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.2);font-size:0.78rem;color:#d9ecdc;line-height:1.45;">
+            <div style="padding:8px 10px;margin-bottom:10px;border-radius:10px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.2);font-size:0.78rem;color:#d9ecdc;line-height:1.45;">
               <div><strong>🎯 Objetivo (${escapeHtml(goalMeta.title)}):</strong> ${escapeHtml(goalMeta.simpleTitle)} — <em>${escapeHtml(goalMeta.whatIsIt)}</em></div>
               <div style="margin-top:3px;"><strong>🛠️ Herramientas hoy:</strong> ${escapeHtml(toolsText)}</div>
               ${novice ? `<div style="margin-top:3px;color:var(--green);"><strong>💡 Masa Magra:</strong> Es todo tu cuerpo libre de grasa (músculos y huesos).</div>` : ''}
             </div>
-          </div>
 
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="biometria">
-              🎯 Cambiar Objetivo / Nivel
-            </button>
-            <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="salud">
-              🛡️ Equipo/Salud
-            </button>
-            <button type="button" class="secondary" style="flex:1;border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
-              ⬇️ .JSON
-            </button>
-            <button type="button" class="ghost" style="flex:1;" data-action="trigger-import-json">
-              ⬆️ Cargar
-            </button>
-          </div>
-        </section>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="biometria">
+                🎯 Objetivo / Nivel
+              </button>
+              <button type="button" class="secondary" style="flex:1;" data-action="open-profile-tab" data-subtab="salud">
+                🛡️ Equipo/Salud
+              </button>
+              <button type="button" class="secondary" style="flex:1;border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
+                ⬇️ .JSON
+              </button>
+              <button type="button" class="ghost" style="flex:1;" data-action="trigger-import-json">
+                ⬆️ Cargar
+              </button>
+            </div>
+          `
+        })}
       </div>
     `;
   }
@@ -1233,41 +1244,53 @@
           <strong>${escapeHtml(selectedGroups.join(' + '))}</strong>
         </div>
         <div class="compact-section-bar-actions">
-          <button type="button" class="secondary ${novice ? 'is-active' : ''}" style="${novice ? 'border-color:var(--green);color:var(--green);' : ''}" data-action="toggle-beginner-help" title="Mostrar u ocultar explicaciones sencillas para principiantes">
-            🌱 ${novice ? 'Guía Novato: ON' : 'Guía Novato'}
-          </button>
           <button type="button" data-action="export-workout-pdf" title="Extraer en PDF el entrenamiento de hoy incluyendo todos los links de YouTube y de la app">
-            📄 Descargar Rutina Hoy en PDF (con Links)
+            📄 PDF Hoy
           </button>
-          <button type="button" class="secondary" data-action="switch-view" data-view="programs">🏆 Músculos / Rutina</button>
+          <button type="button" class="secondary" data-action="switch-view" data-view="programs">🏆 Rutina</button>
           <button type="button" class="secondary" data-action="switch-view" data-view="library">+ Agregar</button>
         </div>
       </div>
 
-      ${novice ? `
-        <div class="novice-guide-banner" style="margin-bottom:10px;">
-          <div class="novice-guide-top">
-            <strong>🌱 Guía Rápida de Entrenamiento para Principiantes</strong>
-          </div>
-          <div class="novice-glossary-grid">
-            <div class="novice-glossary-item">
-              <strong>🔢 ¿Qué es Series × Reps (ej. 3 × 10)?</strong>
-              <span>Haz el movimiento <strong>10 veces seguidas</strong> (eso es 1 serie). Descansa 60–90 segundos con el Timer y repite ese bloque <strong>3 veces</strong> en total.</span>
-            </div>
-            <div class="novice-glossary-item">
-              <strong>🌡️ ¿Qué es RPE (Esfuerzo del 1 al 10)?</strong>
-              <span>Es qué tan pesado sentiste el ejercicio: <strong>1 = Muy fácil</strong>, <strong>7 u 8 = Ideal para novatos</strong> (terminas sintiendo que podrías hacer 2 o 3 repeticiones más con buena postura), <strong>10 = Al límite</strong>.</span>
-            </div>
-            <div class="novice-glossary-item">
-              <strong>🔥 ¿Qué son los METs?</strong>
-              <span>Mide cuánta energía quema el ejercicio comparado con estar sentado en reposo (1 MET). A más METs y minutos, más calorías quemas.</span>
-            </div>
-          </div>
-        </div>
-      ` : ''}
+      <!-- Collapsible Top Drawers in Workout View so Exercises stay right at the top on Mobile! -->
+      <div class="collapsible-stack" style="margin-bottom:10px;">
+        ${renderCollapsibleSection({
+          group: 'workoutTop',
+          id: 'wk-tools',
+          eyebrow: 'FILTRO DE EQUIPO',
+          title: '🛠️ Herramientas Disponibles (Mancuernas, Barra, Banco...)',
+          summary: activeTools.length
+            ? activeTools.map((id) => TOOL_FILTER_OPTIONS.find((t) => t.id === id)?.short || id).join(' + ')
+            : '⚡ Todas',
+          isOpen: getOpenSection('workoutTop', null) === 'wk-tools',
+          bodyHtml: renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')
+        })}
 
-      <!-- Specific Tools Selector Bar (Mancuernas, Barra, Banco & Combo!) -->
-      ${renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')}
+        ${renderCollapsibleSection({
+          group: 'workoutTop',
+          id: 'wk-novice',
+          eyebrow: 'GUÍA PARA PRINCIPIANTES',
+          title: '🌱 ¿Qué significan Series, Reps, RPE y METs?',
+          summary: novice ? 'Modo Novato' : 'Ver guía',
+          isOpen: getOpenSection('workoutTop', null) === 'wk-novice',
+          bodyHtml: `
+            <div class="novice-glossary-grid" style="margin-top:0;">
+              <div class="novice-glossary-item">
+                <strong>🔢 ¿Qué es Series × Reps (ej. 3 × 10)?</strong>
+                <span>Haz el movimiento <strong>10 veces seguidas</strong> (eso es 1 serie). Descansa 60–90 segundos con el Timer y repite ese bloque <strong>3 veces</strong> en total.</span>
+              </div>
+              <div class="novice-glossary-item">
+                <strong>🌡️ ¿Qué es RPE (Esfuerzo del 1 al 10)?</strong>
+                <span>Es qué tan pesado sentiste el ejercicio: <strong>1 = Muy fácil</strong>, <strong>7 u 8 = Ideal para novatos</strong> (terminas sintiendo que podrías hacer 2 o 3 repeticiones más con buena postura), <strong>10 = Al límite</strong>.</span>
+              </div>
+              <div class="novice-glossary-item">
+                <strong>🔥 ¿Qué son los METs?</strong>
+                <span>Mide cuánta energía quema el ejercicio comparado con estar sentado en reposo (1 MET). A más METs y minutos, más calorías quemas.</span>
+              </div>
+            </div>
+          `
+        })}
+      </div>
 
       <div class="hevy-workout-list">
         ${routineExercises.map((ex, idx) => {
@@ -1499,50 +1522,124 @@
     `;
   }
 
-  // ── 3. Render: Programs & Smart Routine Generator (Boostcamp + WorkoutGen) ──
+  // ── 3. Render: Programs & Smart Routine Generator (Collapsible Accordion Sections!) ──
   function renderPrograms() {
     const prof = getActiveProfile();
     const date = state.selectedDate || todayIso();
     const selectedGroups = getSelectedGroupsForDate(date);
     const activeTools = Array.isArray(prof.selectedTools) ? prof.selectedTools : [];
-    const novice = isNoviceMode(prof);
+    const goalMeta = getGoalMeta(prof.goal);
+    const openSec = getOpenSection('programs', 'prog-generator');
+    const toolsText = activeTools.length
+      ? activeTools.map((id) => TOOL_FILTER_OPTIONS.find((t) => t.id === id)?.short || id).join('+')
+      : 'Todas';
 
     return `
-      <!-- Clear Personal Goals Explainer right in Programs so any Novice knows what to pick! -->
-      <section class="panel" style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          <div>
-            <span class="eyebrow">🎯 PASO 1 · ¿CUÁL ES TU OBJETIVO PERSONAL? (EXPLICADO EN PALABRAS SIMPLES)</span>
-            <h3 style="margin:2px 0 0;">Elige qué resultado buscas en tu cuerpo</h3>
-          </div>
-          <button type="button" class="secondary" data-action="toggle-beginner-help">
-            🌱 ${novice ? 'Ocultar Guía Novato' : 'Ver Glosario Principiante'}
-          </button>
-        </div>
+      <div class="collapsible-stack">
+        ${renderCollapsibleSection({
+          group: 'programs',
+          id: 'prog-goal',
+          eyebrow: 'PASO 1 · OBJETIVO PERSONAL EXPLICADO',
+          title: '🎯 ¿Cuál es tu Objetivo Personal? (Guía para Principiantes)',
+          summary: `${goalMeta.icon} ${goalMeta.title}`,
+          isOpen: openSec === 'prog-goal',
+          bodyHtml: `
+            <div class="goal-explainer-grid">
+              ${GOAL_OPTIONS.map((g) => {
+                const isSel = prof.goal === g.id;
+                return `
+                  <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-personal-goal" data-goal="${escapeHtml(g.id)}">
+                    <div class="goal-card-top">
+                      <span class="goal-icon">${g.icon}</span>
+                      <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ TU OBJETIVO ACTUAL' : 'ELEGIR'}</span>
+                    </div>
+                    <strong>${escapeHtml(g.title)}</strong>
+                    <div class="goal-simple-sub">${escapeHtml(g.simpleTitle)}</div>
+                    <p>${escapeHtml(g.whatIsIt)}</p>
+                    <small>👤 <strong>¿Para quién es?:</strong> ${escapeHtml(g.whoIsItFor)}</small>
+                    <small style="color:var(--green);">⚙️ <strong>Efecto en la App:</strong> ${escapeHtml(g.appAction)}</small>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          `
+        })}
 
-        <div class="goal-explainer-grid">
-          ${GOAL_OPTIONS.map((g) => {
-            const isSel = prof.goal === g.id;
-            return `
-              <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-personal-goal" data-goal="${escapeHtml(g.id)}">
-                <div class="goal-card-top">
-                  <span class="goal-icon">${g.icon}</span>
-                  <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ TU OBJETIVO ACTUAL' : 'ELEGIR'}</span>
-                </div>
-                <strong>${escapeHtml(g.title)}</strong>
-                <div class="goal-simple-sub">${escapeHtml(g.simpleTitle)}</div>
-                <p>${escapeHtml(g.whatIsIt)}</p>
-                <small>👤 <strong>¿Para quién es?:</strong> ${escapeHtml(g.whoIsItFor)}</small>
-                <small style="color:var(--green);">⚙️ <strong>Efecto en la App:</strong> ${escapeHtml(g.appAction)}</small>
+        ${renderCollapsibleSection({
+          group: 'programs',
+          id: 'prog-generator',
+          eyebrow: 'PASO 2 · GENERADOR A MEDIDA',
+          title: '🛠️ Selecciona tus Herramientas (Mancuernas, Barra, Banco) y Músculos',
+          summary: `${toolsText} · ${selectedGroups.length} músc.`,
+          isOpen: openSec === 'prog-generator',
+          bodyHtml: `
+            ${renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')}
+
+            <h3 style="margin:12px 0 8px;">Selecciona los Músculos para tu Sesión (${selectedGroups.length} activos)</h3>
+            <div class="group-chip-grid">
+              ${ROUTINE_GROUPS.map((grp) => {
+                const count = EXERCISES.filter((e) => e.group === grp && matchesSelectedTools(e, activeTools)).length;
+                const isSel = selectedGroups.includes(grp);
+                return `
+                  <button type="button" class="group-chip ${isSel ? 'is-selected' : ''}" data-action="toggle-day-group" data-group="${escapeHtml(grp)}">
+                    <div class="group-chip-top">
+                      <span class="group-chip-mark">${isSel ? '✓ ACTIVO' : 'MÚSCULO'}</span>
+                      <span class="group-chip-count">${count} ej.</span>
+                    </div>
+                    <strong>${escapeHtml(grp)}</strong>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+
+            <div class="actions" style="margin-top:12px;">
+              <button type="button" style="width:100%;" data-action="switch-view" data-view="workout">
+                ▶️ Ir a Entrenar Hoy con esta Selección
               </button>
-            `;
-          }).join('')}
-        </div>
+            </div>
+          `
+        })}
 
-        ${novice ? `
-          <div class="novice-guide-banner" style="margin-top:12px;">
-            <strong>🌱 Glosario Rápido de Términos de Gimnasio para Principiantes:</strong>
-            <div class="novice-glossary-grid" style="margin-top:6px;">
+        ${renderCollapsibleSection({
+          group: 'programs',
+          id: 'prog-coaches',
+          eyebrow: 'PASO 3 · RUTINAS COMPLETAS',
+          title: '🏆 Programas Prediseñados Listos para Seguir (1 Clic)',
+          summary: `${COACH_PROGRAMS.length} programas`,
+          isOpen: openSec === 'prog-coaches',
+          bodyHtml: `
+            <div class="program-grid">
+              ${COACH_PROGRAMS.map((prog) => `
+                <article class="program-card">
+                  <div>
+                    <div class="tag-row" style="margin-top:0;">
+                      <span class="tag">${escapeHtml(prog.coach)}</span>
+                      <span class="tag neutral">${escapeHtml(prog.level)}</span>
+                    </div>
+                    <h3 style="margin:6px 0;font-size:1.05rem;">${escapeHtml(prog.title)}</h3>
+                    <p class="muted" style="margin:0 0 8px;font-size:0.8rem;line-height:1.4;">${escapeHtml(prog.desc)}</p>
+                    <div class="tag-row">
+                      ${prog.groups.map((g) => `<span class="tag coral">${escapeHtml(g)}</span>`).join('')}
+                    </div>
+                  </div>
+                  <button type="button" data-action="activate-coach-program" data-prog-id="${escapeHtml(prog.id)}">
+                    ⚡ Activar Programa e Ir a Entrenar
+                  </button>
+                </article>
+              `).join('')}
+            </div>
+          `
+        })}
+
+        ${renderCollapsibleSection({
+          group: 'programs',
+          id: 'prog-glossary',
+          eyebrow: 'PASO 4 · DICCIONARIO NOVATO',
+          title: '🌱 Glosario de Términos de Gimnasio (Hipertrofia, Push, Pull, Core)',
+          summary: 'Explicación sencilla',
+          isOpen: openSec === 'prog-glossary',
+          bodyHtml: `
+            <div class="novice-glossary-grid" style="margin-top:0;">
               <div class="novice-glossary-item">
                 <strong>💪 Hipertrofia</strong>
                 <span>Significa aumentar el tamaño y firmeza de tus músculos mediante ejercicios con resistencia (pesas, máquinas o tu cuerpo).</span>
@@ -1560,69 +1657,13 @@
                 <span>Es toda tu faja abdominal y espalda baja que protege tu columna y mantiene tu postura firme.</span>
               </div>
             </div>
-          </div>
-        ` : ''}
-      </section>
-
-      <section class="panel" style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          <div>
-            <span class="eyebrow">🛠️ PASO 2 · HERRAMIENTAS Y MÚSCULOS PARA HOY</span>
-            <h3 style="margin:2px 0 0;">Selecciona tus Herramientas (Mancuernas, Barra, Banco...)</h3>
-          </div>
-          <button type="button" data-action="switch-view" data-view="workout">
-            ▶️ Ir a Entrenar Hoy
-          </button>
-        </div>
-
-        ${renderToolSelectorBar(activeTools, 'toggle-workout-tool', 'set-workout-mbb-combo', 'clear-workout-tools')}
-
-        <h3 style="margin:12px 0 8px;">Selecciona los Músculos para tu Sesión (${selectedGroups.length} activos)</h3>
-        <div class="group-chip-grid">
-          ${ROUTINE_GROUPS.map((grp) => {
-            const count = EXERCISES.filter((e) => e.group === grp && matchesSelectedTools(e, activeTools)).length;
-            const isSel = selectedGroups.includes(grp);
-            return `
-              <button type="button" class="group-chip ${isSel ? 'is-selected' : ''}" data-action="toggle-day-group" data-group="${escapeHtml(grp)}">
-                <div class="group-chip-top">
-                  <span class="group-chip-mark">${isSel ? '✓ ACTIVO' : 'MÚSCULO'}</span>
-                  <span class="group-chip-count">${count} ej.</span>
-                </div>
-                <strong>${escapeHtml(grp)}</strong>
-              </button>
-            `;
-          }).join('')}
-        </div>
-      </section>
-
-      <section class="panel">
-        <span class="eyebrow">🏆 PASO 3 · PROGRAMAS PREDISEÑADOS (1 CLIC)</span>
-        <h3 style="margin:4px 0 12px;">Elige una Rutina Completa Lista para Seguir</h3>
-        <div class="program-grid">
-          ${COACH_PROGRAMS.map((prog) => `
-            <article class="program-card">
-              <div>
-                <div class="tag-row" style="margin-top:0;">
-                  <span class="tag">${escapeHtml(prog.coach)}</span>
-                  <span class="tag neutral">${escapeHtml(prog.level)}</span>
-                </div>
-                <h3 style="margin:6px 0;font-size:1.05rem;">${escapeHtml(prog.title)}</h3>
-                <p class="muted" style="margin:0 0 8px;font-size:0.8rem;line-height:1.4;">${escapeHtml(prog.desc)}</p>
-                <div class="tag-row">
-                  ${prog.groups.map((g) => `<span class="tag coral">${escapeHtml(g)}</span>`).join('')}
-                </div>
-              </div>
-              <button type="button" data-action="activate-coach-program" data-prog-id="${escapeHtml(prog.id)}">
-                ⚡ Activar Programa e Ir a Entrenar
-              </button>
-            </article>
-          `).join('')}
-        </div>
-      </section>
+          `
+        })}
+      </div>
     `;
   }
 
-  // ── 4. Render: 1,324 Exercise Library (Entrenamientos.com Style) ──
+  // ── 4. Render: 1,324 Exercise Library (Compact Search + Collapsible Tool/Muscle Filters!) ──
   function renderLibrary() {
     const f = state.libraryFilter;
     if (!Array.isArray(f.tools)) f.tools = [];
@@ -1643,58 +1684,73 @@
     });
 
     const visible = filtered.slice(0, f.limit || 24);
+    const activeFilterSummary = [
+      f.tools.length ? f.tools.join('+') : 'Todas las herramientas',
+      f.group !== 'Todos' ? f.group : 'Todos los músculos',
+      `${filtered.length} ej.`
+    ].join(' · ');
 
     return `
-      <section class="library-console">
-        <!-- Multi-Select Tool Filter right at the top of the Library! -->
-        ${renderToolSelectorBar(f.tools, 'toggle-lib-tool', 'set-lib-mbb-combo', 'clear-lib-tools')}
+      <!-- Search Input always visible at the top -->
+      <div class="compact-section-bar" style="margin-bottom:8px;">
+        <div class="search-input-wrap" style="flex:1;min-width:200px;">
+          <span class="search-input-icon">🔍</span>
+          <input type="text" id="libSearchInput" value="${escapeHtml(f.search)}" placeholder="Buscar entre 1,324 ejercicios (ej. Press en banco, Mancuernas, Barra, #0684)..." style="min-height:38px;" />
+        </div>
+        <span class="tag">${visible.length} / ${filtered.length}</span>
+        ${(f.search || f.group !== 'Todos' || f.tools.length || f.modality !== 'todas' || f.level !== 'todos' || f.trackingType !== 'todos' || f.onlyFavorites) ? `
+          <button type="button" class="ghost" style="min-height:32px;padding:4px 8px;font-size:0.74rem;" data-action="reset-lib-filters">✕ Limpiar</button>
+        ` : ''}
+      </div>
 
-        <div class="library-search-row">
-          <div class="field">
-            <label>Buscar por nombre, músculo, herramienta o #ID</label>
-            <div class="search-input-wrap">
-              <span class="search-input-icon">🔍</span>
-              <input type="text" id="libSearchInput" value="${escapeHtml(f.search)}" placeholder="Ej. Press en banco, Mancuernas, Barra, Remo, #0684..." />
+      <!-- Collapsible Filters & Specific Tools Drawer -->
+      <div class="collapsible-stack" style="margin-bottom:12px;">
+        ${renderCollapsibleSection({
+          group: 'library',
+          id: 'lib-filters',
+          eyebrow: 'FILTROS AVANZADOS',
+          title: '🎛️ Filtrar por Herramientas (Mancuernas, Barra, Banco), Músculo y Nivel',
+          summary: activeFilterSummary,
+          isOpen: getOpenSection('library', null) === 'lib-filters',
+          bodyHtml: `
+            ${renderToolSelectorBar(f.tools, 'toggle-lib-tool', 'set-lib-mbb-combo', 'clear-lib-tools')}
+
+            <div class="library-search-row" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+              <div class="field">
+                <label>Grupo Muscular</label>
+                <select id="libGroupSelect">
+                  <option value="Todos">Todos los grupos (${EXERCISES.length})</option>
+                  ${ROUTINE_GROUPS.map((g) => `<option value="${escapeHtml(g)}" ${f.group === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field">
+                <label>Modalidad General</label>
+                <select id="libModalitySelect">
+                  ${MODALITY_OPTIONS.map((m) => `<option value="${escapeHtml(m.id)}" ${f.modality === m.id ? 'selected' : ''}>${escapeHtml(m.label)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field">
+                <label>Nivel</label>
+                <select id="libLevelSelect">
+                  <option value="todos" ${f.level === 'todos' ? 'selected' : ''}>Todos los niveles</option>
+                  <option value="novato" ${f.level === 'novato' ? 'selected' : ''}>Principiante (Novato)</option>
+                  <option value="intermedio" ${f.level === 'intermedio' ? 'selected' : ''}>Intermedio</option>
+                  <option value="avanzado" ${f.level === 'avanzado' ? 'selected' : ''}>Avanzado</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="field">
-            <label>Grupo Muscular</label>
-            <select id="libGroupSelect">
-              <option value="Todos">Todos los grupos (${EXERCISES.length})</option>
-              ${ROUTINE_GROUPS.map((g) => `<option value="${escapeHtml(g)}" ${f.group === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
-            </select>
-          </div>
-          <div class="field">
-            <label>Modalidad General</label>
-            <select id="libModalitySelect">
-              ${MODALITY_OPTIONS.map((m) => `<option value="${escapeHtml(m.id)}" ${f.modality === m.id ? 'selected' : ''}>${escapeHtml(m.label)}</option>`).join('')}
-            </select>
-          </div>
-          <div class="field">
-            <label>Nivel</label>
-            <select id="libLevelSelect">
-              <option value="todos" ${f.level === 'todos' ? 'selected' : ''}>Todos los niveles</option>
-              <option value="novato" ${f.level === 'novato' ? 'selected' : ''}>Principiante (Novato)</option>
-              <option value="intermedio" ${f.level === 'intermedio' ? 'selected' : ''}>Intermedio</option>
-              <option value="avanzado" ${f.level === 'avanzado' ? 'selected' : ''}>Avanzado</option>
-            </select>
-          </div>
-        </div>
 
-        <div class="library-quick-chips">
-          <button type="button" class="quick-chip ${f.trackingType === 'time_cardio' ? 'is-active' : ''}" data-action="toggle-lib-time-cardio">
-            ⏱️ Solo Por Tiempo / Cardio
-          </button>
-          <button type="button" class="quick-chip ${f.onlyFavorites ? 'is-active' : ''}" data-action="toggle-lib-favs">
-            ★ Favoritos (${state.favorites.length})
-          </button>
-        </div>
-
-        <div class="library-status-bar">
-          <span class="muted">Mostrando <strong>${visible.length}</strong> de <strong>${filtered.length}</strong> ejercicios disponibles</span>
-          <button type="button" class="ghost" data-action="reset-lib-filters">Limpiar filtros</button>
-        </div>
-      </section>
+            <div class="library-quick-chips" style="margin-top:8px;">
+              <button type="button" class="quick-chip ${f.trackingType === 'time_cardio' ? 'is-active' : ''}" data-action="toggle-lib-time-cardio">
+                ⏱️ Solo Por Tiempo / Cardio
+              </button>
+              <button type="button" class="quick-chip ${f.onlyFavorites ? 'is-active' : ''}" data-action="toggle-lib-favs">
+                ★ Favoritos (${state.favorites.length})
+              </button>
+            </div>
+          `
+        })}
+      </div>
 
       <div class="catalog-grid">
         ${visible.map((ex) => {
@@ -1760,78 +1816,84 @@
     });
 
     const visible = filtered.slice(0, nf.limit || 24);
+    const ketoFilterSummary = [
+      activeCat.label,
+      nf.maxNetCarbs < 99 ? `≤ ${nf.maxNetCarbs}g Carbs` : 'Todos los carbs',
+      `${filtered.length} recetas`
+    ].join(' · ');
 
     return `
-      ${novice ? `
-        <div class="novice-guide-banner" style="margin-bottom:12px;">
-          <div class="novice-guide-top">
-            <strong>🌱 Guía Keto Sencilla para Principiantes</strong>
-          </div>
-          <div class="novice-glossary-grid" style="margin-top:6px;">
-            <div class="novice-glossary-item">
-              <strong>🥑 ¿Qué son los Carbos Netos?</strong>
-              <span>Son los carbohidratos que realmente suben el azúcar en sangre (se calculan restando la <em>Fibra</em> a los carbohidratos totales). Mantenerlos bajos (≤20-25g al día) hace que tu cuerpo queme tu propia grasa como energía.</span>
-            </div>
-            <div class="novice-glossary-item">
-              <strong>🥩 ¿Para qué sirve la Proteína?</strong>
-              <span>Alimenta y repara tus músculos después de entrenar para que no pierdas firmeza mientras bajas de peso.</span>
-            </div>
-            <div class="novice-glossary-item">
-              <strong>🫒 ¿Por qué hay Grasas en Keto?</strong>
-              <span>Al comer pocos azúcares/harinas, las grasas buenas (aguacate, aceite de oliva, salmón, huevos) te dan energía constante sin hambre.</span>
-            </div>
-          </div>
+      <!-- Compact Search + Category Chips right at the top -->
+      <div class="compact-section-bar" style="margin-bottom:8px;">
+        <div class="search-input-wrap" style="flex:1;min-width:200px;">
+          <span class="search-input-icon">🥑</span>
+          <input type="text" id="ketoSearchInput" value="${escapeHtml(nf.search)}" placeholder="Buscar entre 131 recetas (ej. Ensalada, Sopa, Salmón, Pollo, Aguacate)..." style="min-height:38px;" />
         </div>
-      ` : ''}
+        <span class="tag">${visible.length} / ${filtered.length}</span>
+        ${(nf.search || nf.mealType !== 'todos' || nf.maxNetCarbs < 99) ? `
+          <button type="button" class="ghost" style="min-height:32px;padding:4px 8px;font-size:0.74rem;" data-action="reset-keto-filters">✕ Limpiar</button>
+        ` : ''}
+      </div>
 
-      <section class="library-console">
-        <div class="library-search-row" style="grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(200px,0.6fr));">
-          <div class="field">
-            <label>Buscar por ingrediente o platillo</label>
-            <div class="search-input-wrap">
-              <span class="search-input-icon">🥑</span>
-              <input type="text" id="ketoSearchInput" value="${escapeHtml(nf.search)}" placeholder="Ej. Ensalada, Sopa, Salmón, Pollo, Aguacate, Huevos..." />
+      <div class="library-quick-chips" style="margin:0 0 10px;">
+        ${MEAL_CATEGORIES.map((cat) => {
+          const cnt = RECIPES.filter(cat.match).length;
+          return `
+            <button type="button" class="quick-chip ${nf.mealType === cat.id ? 'is-active' : ''}" data-action="set-keto-meal-chip" data-meal="${escapeHtml(cat.id)}">
+              ${escapeHtml(cat.label)} (${cnt})
+            </button>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- Collapsible Filters & Keto Beginner Guide -->
+      <div class="collapsible-stack" style="margin-bottom:12px;">
+        ${renderCollapsibleSection({
+          group: 'nutrition',
+          id: 'keto-filters',
+          eyebrow: 'FILTROS Y GUÍA KETO',
+          title: '🎛️ Tope de Carbos Netos y Guía Keto para Principiantes',
+          summary: ketoFilterSummary,
+          isOpen: getOpenSection('nutrition', null) === 'keto-filters',
+          bodyHtml: `
+            <div class="library-search-row" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:10px;">
+              <div class="field">
+                <label>Tiempo de comida / Categoría</label>
+                <select id="ketoMealSelect">
+                  ${MEAL_CATEGORIES.map((cat) => {
+                    const cnt = RECIPES.filter(cat.match).length;
+                    return `<option value="${escapeHtml(cat.id)}" ${nf.mealType === cat.id ? 'selected' : ''}>${escapeHtml(cat.label)} (${cnt})</option>`;
+                  }).join('')}
+                </select>
+              </div>
+              <div class="field">
+                <label>Máximo Carbos Netos por porción</label>
+                <select id="ketoCarbSelect">
+                  <option value="99" ${nf.maxNetCarbs === 99 ? 'selected' : ''}>Sin filtro (${RECIPES.length})</option>
+                  <option value="3" ${nf.maxNetCarbs === 3 ? 'selected' : ''}>Ultra Keto (≤ 3g netos)</option>
+                  <option value="5" ${nf.maxNetCarbs === 5 ? 'selected' : ''}>Estricto (≤ 5g netos)</option>
+                  <option value="8" ${nf.maxNetCarbs === 8 ? 'selected' : ''}>Moderado (≤ 8g netos)</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="field">
-            <label>Tiempo de comida / Categoría</label>
-            <select id="ketoMealSelect">
-              ${MEAL_CATEGORIES.map((cat) => {
-                const cnt = RECIPES.filter(cat.match).length;
-                return `<option value="${escapeHtml(cat.id)}" ${nf.mealType === cat.id ? 'selected' : ''}>${escapeHtml(cat.label)} (${cnt})</option>`;
-              }).join('')}
-            </select>
-          </div>
-          <div class="field">
-            <label>Máximo Carbos Netos por porción</label>
-            <select id="ketoCarbSelect">
-              <option value="99" ${nf.maxNetCarbs === 99 ? 'selected' : ''}>Sin filtro (${RECIPES.length})</option>
-              <option value="3" ${nf.maxNetCarbs === 3 ? 'selected' : ''}>Ultra Keto (≤ 3g netos)</option>
-              <option value="5" ${nf.maxNetCarbs === 5 ? 'selected' : ''}>Estricto (≤ 5g netos)</option>
-              <option value="8" ${nf.maxNetCarbs === 8 ? 'selected' : ''}>Moderado (≤ 8g netos)</option>
-            </select>
-          </div>
-        </div>
 
-        <!-- Quick Category Chips with Exact Counts -->
-        <div class="library-quick-chips">
-          ${MEAL_CATEGORIES.map((cat) => {
-            const cnt = RECIPES.filter(cat.match).length;
-            return `
-              <button type="button" class="quick-chip ${nf.mealType === cat.id ? 'is-active' : ''}" data-action="set-keto-meal-chip" data-meal="${escapeHtml(cat.id)}">
-                ${escapeHtml(cat.label)} (${cnt})
-              </button>
-            `;
-          }).join('')}
-        </div>
-
-        <div class="library-status-bar">
-          <span class="muted">Mostrando <strong>${visible.length}</strong> de <strong>${filtered.length}</strong> recetas transcritas en esta categoría</span>
-          ${(nf.search || nf.mealType !== 'todos' || nf.maxNetCarbs < 99) ? `
-            <button type="button" class="ghost" data-action="reset-keto-filters">Ver todas las 131 recetas</button>
-          ` : ''}
-        </div>
-      </section>
+            <div class="novice-glossary-grid" style="margin-top:6px;">
+              <div class="novice-glossary-item">
+                <strong>🥑 ¿Qué son los Carbos Netos?</strong>
+                <span>Son los carbohidratos que realmente suben el azúcar en sangre (se calculan restando la <em>Fibra</em> a los carbohidratos totales). Mantenerlos bajos (≤20-25g al día) hace que tu cuerpo queme tu propia grasa como energía.</span>
+              </div>
+              <div class="novice-glossary-item">
+                <strong>🥩 ¿Para qué sirve la Proteína?</strong>
+                <span>Alimenta y repara tus músculos después de entrenar para que no pierdas firmeza mientras bajas de peso.</span>
+              </div>
+              <div class="novice-glossary-item">
+                <strong>🫒 ¿Por qué hay Grasas en Keto?</strong>
+                <span>Al comer pocos azúcares/harinas, las grasas buenas (aguacate, aceite de oliva, salmón, huevos) te dan energía constante sin hambre.</span>
+              </div>
+            </div>
+          `
+        })}
+      </div>
 
       <!-- Organized, Clean 2-Column Recipe Grid (No Visual Overload!) -->
       <div class="program-grid" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr));">
@@ -1927,214 +1989,244 @@
       </div>
 
       ${subTab === 'biometria' ? `
-        <section class="panel">
-          <form id="profileForm">
-            <span class="eyebrow">FORMATO DE ALTURA FLEXIBLE E ÍNDICES AUTOMÁTICOS</span>
-            <h3 style="margin:4px 0 14px;">Datos Básicos de ${escapeHtml(prof.name)}</h3>
+        <form id="profileForm">
+          <div class="collapsible-stack">
+            ${renderCollapsibleSection({
+              group: 'profileBio',
+              id: 'bio-datos',
+              eyebrow: 'SECCIÓN 1 · MEDIDAS PRINCIPALES',
+              title: `📏 Datos Básicos y Altura de ${prof.name}`,
+              summary: `${prof.weightLb} lb · ${formatHeightDisplay(prof.heightIn, prof.heightUnit)}`,
+              isOpen: getOpenSection('profileBio', 'bio-datos') === 'bio-datos',
+              bodyHtml: `
+                <div class="form-grid">
+                  <div class="field">
+                    <label>Nombre del perfil</label>
+                    <input type="text" name="name" value="${escapeHtml(prof.name)}" required />
+                  </div>
+                  <div class="field">
+                    <label>Sexo biológico</label>
+                    <select name="sex">
+                      <option value="hombre" ${prof.sex === 'hombre' ? 'selected' : ''}>Hombre</option>
+                      <option value="mujer" ${prof.sex === 'mujer' ? 'selected' : ''}>Mujer</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Edad (años)</label>
+                    <input type="number" name="age" min="14" max="95" value="${prof.age}" />
+                  </div>
+                  <div class="field">
+                    <label>Peso actual (lb)</label>
+                    <input type="number" name="weightLb" min="60" max="550" step="0.5" value="${prof.weightLb}" />
+                  </div>
 
-            <div class="form-grid">
-              <div class="field">
-                <label>Nombre del perfil</label>
-                <input type="text" name="name" value="${escapeHtml(prof.name)}" required />
-              </div>
-              <div class="field">
-                <label>Sexo biológico</label>
-                <select name="sex">
-                  <option value="hombre" ${prof.sex === 'hombre' ? 'selected' : ''}>Hombre</option>
-                  <option value="mujer" ${prof.sex === 'mujer' ? 'selected' : ''}>Mujer</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Edad (años)</label>
-                <input type="number" name="age" min="14" max="95" value="${prof.age}" />
-              </div>
-              <div class="field">
-                <label>Peso actual (lb)</label>
-                <input type="number" name="weightLb" min="60" max="550" step="0.5" value="${prof.weightLb}" />
-              </div>
+                  <div class="field">
+                    <label>Formato de Altura</label>
+                    <select name="heightUnit" id="profileHeightUnitSelect">
+                      <option value="ft_in" ${unit === 'ft_in' ? 'selected' : ''}>Pies y pulgadas (ft / in)</option>
+                      <option value="cm" ${unit === 'cm' ? 'selected' : ''}>Centímetros (cm)</option>
+                      <option value="m" ${unit === 'm' ? 'selected' : ''}>Metros (m)</option>
+                      <option value="in" ${unit === 'in' ? 'selected' : ''}>Pulgadas totales (in)</option>
+                    </select>
+                  </div>
 
-              <div class="field">
-                <label>Formato de Altura</label>
-                <select name="heightUnit" id="profileHeightUnitSelect">
-                  <option value="ft_in" ${unit === 'ft_in' ? 'selected' : ''}>Pies y pulgadas (ft / in)</option>
-                  <option value="cm" ${unit === 'cm' ? 'selected' : ''}>Centímetros (cm)</option>
-                  <option value="m" ${unit === 'm' ? 'selected' : ''}>Metros (m)</option>
-                  <option value="in" ${unit === 'in' ? 'selected' : ''}>Pulgadas totales (in)</option>
-                </select>
-              </div>
+                  ${unit === 'ft_in' ? `
+                    <div class="field">
+                      <label>Altura: Pies (ft)</label>
+                      <input type="number" id="heightFtInput" min="3" max="7" step="1" value="${ftVal}" />
+                    </div>
+                    <div class="field">
+                      <label>Altura: Pulgadas (in)</label>
+                      <input type="number" id="heightRemInInput" min="0" max="11" step="1" value="${remInVal}" />
+                    </div>
+                  ` : ''}
 
-              ${unit === 'ft_in' ? `
-                <div class="field">
-                  <label>Altura: Pies (ft)</label>
-                  <input type="number" id="heightFtInput" min="3" max="7" step="1" value="${ftVal}" />
+                  ${unit === 'cm' ? `
+                    <div class="field wide">
+                      <label>Altura en Centímetros (cm)</label>
+                      <input type="number" id="heightCmInput" min="120" max="230" step="0.5" value="${cmVal}" />
+                    </div>
+                  ` : ''}
+
+                  ${unit === 'm' ? `
+                    <div class="field wide">
+                      <label>Altura en Metros (m)</label>
+                      <input type="number" id="heightMInput" min="1.20" max="2.30" step="0.01" value="${mVal}" />
+                    </div>
+                  ` : ''}
+
+                  ${unit === 'in' ? `
+                    <div class="field wide">
+                      <label>Altura en Pulgadas totales (in)</label>
+                      <input type="number" id="heightTotalInInput" min="48" max="90" step="0.5" value="${inches}" />
+                    </div>
+                  ` : ''}
                 </div>
-                <div class="field">
-                  <label>Altura: Pulgadas (in)</label>
-                  <input type="number" id="heightRemInInput" min="0" max="11" step="1" value="${remInVal}" />
+              `
+            })}
+
+            ${renderCollapsibleSection({
+              group: 'profileBio',
+              id: 'bio-nivel-objetivo',
+              eyebrow: 'SECCIÓN 2 · NIVEL Y OBJETIVO PERSONAL EXPLICADOS',
+              title: '🎯 Tu Nivel de Experiencia y Objetivo Personal (Guía Novato)',
+              summary: `${prof.level.toUpperCase()} · ${getGoalMeta(prof.goal).title}`,
+              isOpen: getOpenSection('profileBio', 'bio-datos') === 'bio-nivel-objetivo',
+              bodyHtml: `
+                <div class="form-grid" style="margin-bottom:12px;">
+                  <div class="field">
+                    <label>Tu Nivel de Experiencia</label>
+                    <select name="level" id="profileLevelSelect">
+                      <option value="novato" ${prof.level === 'novato' ? 'selected' : ''}>🌱 Principiante (Novato) — Activa guía y explicaciones</option>
+                      <option value="intermedio" ${prof.level === 'intermedio' ? 'selected' : ''}>⚡ Intermedio</option>
+                      <option value="avanzado" ${prof.level === 'avanzado' ? 'selected' : ''}>🔥 Avanzado</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label>Objetivo Principal</label>
+                    <select name="goal" id="profileGoalSelect">
+                      <option value="recomposicion" ${prof.goal === 'recomposicion' ? 'selected' : ''}>🔄 Recomposición Corporal (Bajar grasa y tonificar)</option>
+                      <option value="perdida_grasa" ${prof.goal === 'perdida_grasa' ? 'selected' : ''}>🔥 Pérdida de Grasa (Bajar peso y medidas)</option>
+                      <option value="hipertrofia" ${prof.goal === 'hipertrofia' ? 'selected' : ''}>💪 Fuerza e Hipertrofia (Ganar músculo y volumen)</option>
+                    </select>
+                  </div>
                 </div>
-              ` : ''}
 
-              ${unit === 'cm' ? `
-                <div class="field wide">
-                  <label>Altura en Centímetros (cm)</label>
-                  <input type="number" id="heightCmInput" min="120" max="230" step="0.5" value="${cmVal}" />
+                <span class="eyebrow">🌱 ¿QUÉ SIGNIFICA CADA NIVEL DE EXPERIENCIA?</span>
+                <div class="goal-explainer-grid" style="margin:6px 0 14px;">
+                  ${LEVEL_OPTIONS.map((lv) => {
+                    const isSel = prof.level === lv.id;
+                    return `
+                      <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-profile-level" data-level="${escapeHtml(lv.id)}">
+                        <div class="goal-card-top">
+                          <span class="goal-icon">${lv.icon}</span>
+                          <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ NIVEL ACTIVO' : 'SELECCIONAR'}</span>
+                        </div>
+                        <strong>${escapeHtml(lv.title)}</strong>
+                        <p style="margin:4px 0 0;">${escapeHtml(lv.desc)}</p>
+                      </button>
+                    `;
+                  }).join('')}
                 </div>
-              ` : ''}
 
-              ${unit === 'm' ? `
-                <div class="field wide">
-                  <label>Altura en Metros (m)</label>
-                  <input type="number" id="heightMInput" min="1.20" max="2.30" step="0.01" value="${mVal}" />
+                <span class="eyebrow">🎯 ¿QUÉ SIGNIFICA CADA OBJETIVO PERSONAL?</span>
+                <div class="goal-explainer-grid" style="margin-top:6px;">
+                  ${GOAL_OPTIONS.map((g) => {
+                    const isSel = prof.goal === g.id;
+                    return `
+                      <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-personal-goal" data-goal="${escapeHtml(g.id)}">
+                        <div class="goal-card-top">
+                          <span class="goal-icon">${g.icon}</span>
+                          <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ TU OBJETIVO' : 'ELEGIR'}</span>
+                        </div>
+                        <strong>${escapeHtml(g.title)}</strong>
+                        <div class="goal-simple-sub">${escapeHtml(g.simpleTitle)}</div>
+                        <p>${escapeHtml(g.whatIsIt)}</p>
+                        <small>👤 <strong>¿Cuándo elegirlo?:</strong> ${escapeHtml(g.whoIsItFor)}</small>
+                        <small style="color:var(--green);">⚙️ <strong>Ajuste en la App:</strong> ${escapeHtml(g.appAction)}</small>
+                      </button>
+                    `;
+                  }).join('')}
                 </div>
-              ` : ''}
+              `
+            })}
 
-              ${unit === 'in' ? `
-                <div class="field wide">
-                  <label>Altura en Pulgadas totales (in)</label>
-                  <input type="number" id="heightTotalInInput" min="48" max="90" step="0.5" value="${inches}" />
+            ${renderCollapsibleSection({
+              group: 'profileBio',
+              id: 'bio-indices',
+              eyebrow: 'SECCIÓN 3 · CÁLCULO AUTOMÁTICO',
+              title: '📊 Índices Corporales Auto-Calculados (% Grasa, Masa Magra, IMC)',
+              summary: `${m.bodyFatPct}% Grasa · ${m.leanMassLb} lb Magra · ${m.bmi} IMC`,
+              isOpen: getOpenSection('profileBio', 'bio-datos') === 'bio-indices',
+              bodyHtml: `
+                <div class="metrics">
+                  <div class="metric">
+                    <span>% Grasa Corporal (Auto)</span>
+                    <strong id="autoBodyFatDisplay">${m.bodyFatPct}%</strong>
+                    <small id="autoFatMassDisplay">${m.fatMassLb} lb de grasa</small>
+                    <div class="metric-novice-explain">Qué parte de tu peso es grasa acumulada.</div>
+                  </div>
+                  <div class="metric">
+                    <span>💪 Masa Magra y Muscular</span>
+                    <strong id="autoLeanMassDisplay">${m.leanMassLb} lb magras</strong>
+                    <small id="autoMuscleMassDisplay">~${m.skeletalMuscleMassLb} lb músculo (${m.skeletalMusclePct}%)</small>
+                    <div class="metric-novice-explain">Todo tu cuerpo libre de grasa (músculos y huesos).</div>
+                  </div>
+                  <div class="metric">
+                    <span>📊 IMC &amp; FFMI</span>
+                    <strong id="autoBmiDisplay">${m.bmi} IMC</strong>
+                    <small id="autoBmiCatDisplay">${escapeHtml(m.bmiCategory)}</small>
+                    <div class="metric-novice-explain">Relación entre tu peso y tu estatura.</div>
+                  </div>
+                  <div class="metric">
+                    <span>🔥 Meta Diaria Keto</span>
+                    <strong id="autoCalTargetDisplay">${m.suggestedCalories} kcal</strong>
+                    <small id="autoMacroTargetDisplay">${m.suggestedProtein}g Prot · ${m.suggestedNetCarbs}g Carbs</small>
+                    <div class="metric-novice-explain">Tus calorías, proteína y tope de carbohidratos al día.</div>
+                  </div>
                 </div>
-              ` : ''}
+              `
+            })}
 
-              <div class="field">
-                <label>Tu Nivel de Experiencia</label>
-                <select name="level" id="profileLevelSelect">
-                  <option value="novato" ${prof.level === 'novato' ? 'selected' : ''}>🌱 Principiante (Novato) — Activa guía y explicaciones</option>
-                  <option value="intermedio" ${prof.level === 'intermedio' ? 'selected' : ''}>⚡ Intermedio</option>
-                  <option value="avanzado" ${prof.level === 'avanzado' ? 'selected' : ''}>🔥 Avanzado</option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label>Objetivo Principal</label>
-                <select name="goal" id="profileGoalSelect">
-                  <option value="recomposicion" ${prof.goal === 'recomposicion' ? 'selected' : ''}>🔄 Recomposición Corporal (Bajar grasa y tonificar)</option>
-                  <option value="perdida_grasa" ${prof.goal === 'perdida_grasa' ? 'selected' : ''}>🔥 Pérdida de Grasa (Bajar peso y medidas)</option>
-                  <option value="hipertrofia" ${prof.goal === 'hipertrofia' ? 'selected' : ''}>💪 Fuerza e Hipertrofia (Ganar músculo y volumen)</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Beginner-Friendly Visual Explanation of Levels -->
-            <div style="margin-top:16px;">
-              <span class="eyebrow">🌱 ¿QUÉ SIGNIFICA CADA NIVEL DE EXPERIENCIA? (HAZ CLIC PARA ELEGIR)</span>
-              <div class="goal-explainer-grid" style="margin-top:8px;">
-                ${LEVEL_OPTIONS.map((lv) => {
-                  const isSel = prof.level === lv.id;
-                  return `
-                    <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-profile-level" data-level="${escapeHtml(lv.id)}">
-                      <div class="goal-card-top">
-                        <span class="goal-icon">${lv.icon}</span>
-                        <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ NIVEL ACTIVO' : 'SELECCIONAR'}</span>
-                      </div>
-                      <strong>${escapeHtml(lv.title)}</strong>
-                      <p style="margin:4px 0 0;">${escapeHtml(lv.desc)}</p>
-                    </button>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-
-            <!-- Beginner-Friendly Visual Explanation of Personal Goals -->
-            <div style="margin-top:16px;">
-              <span class="eyebrow">🎯 ¿QUÉ SIGNIFICA CADA OBJETIVO PERSONAL? (EXPLICADO PARA PRINCIPIANTES)</span>
-              <div class="goal-explainer-grid" style="margin-top:8px;">
-                ${GOAL_OPTIONS.map((g) => {
-                  const isSel = prof.goal === g.id;
-                  return `
-                    <button type="button" class="goal-explainer-card ${isSel ? 'is-selected' : ''}" data-action="select-personal-goal" data-goal="${escapeHtml(g.id)}">
-                      <div class="goal-card-top">
-                        <span class="goal-icon">${g.icon}</span>
-                        <span class="tag ${isSel ? '' : 'neutral'}">${isSel ? '✓ TU OBJETIVO' : 'ELEGIR'}</span>
-                      </div>
-                      <strong>${escapeHtml(g.title)}</strong>
-                      <div class="goal-simple-sub">${escapeHtml(g.simpleTitle)}</div>
-                      <p>${escapeHtml(g.whatIsIt)}</p>
-                      <small>👤 <strong>¿Cuándo elegirlo?:</strong> ${escapeHtml(g.whoIsItFor)}</small>
-                      <small style="color:var(--green);">⚙️ <strong>Ajuste en la App:</strong> ${escapeHtml(g.appAction)}</small>
-                    </button>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-
-            <div class="calculation-panel">
-              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-                <h3 style="margin:0;">Índices Corporales Auto-Calculados en Vivo</h3>
-                <span class="tag">✨ ${escapeHtml(m.methodLabel)}</span>
-              </div>
-              <div class="metrics">
-                <div class="metric">
-                  <span>% Grasa Corporal (Auto)</span>
-                  <strong id="autoBodyFatDisplay">${m.bodyFatPct}%</strong>
-                  <small id="autoFatMassDisplay">${m.fatMassLb} lb de grasa</small>
-                  <div class="metric-novice-explain">Qué parte de tu peso es grasa acumulada.</div>
+            ${renderCollapsibleSection({
+              group: 'profileBio',
+              id: 'bio-cinta',
+              eyebrow: 'SECCIÓN 4 · 100% OPCIONAL',
+              title: '📐 Medidas con Cinta Métrica (Cuello, Cintura, Cadera)',
+              summary: prof.useTapeMeasurements ? 'Activadas' : 'Opcional (Desactivado)',
+              isOpen: getOpenSection('profileBio', 'bio-datos') === 'bio-cinta',
+              bodyHtml: `
+                <div class="optional-toggle-banner" style="margin:0;">
+                  <div>
+                    <strong style="color:var(--green);font-size:0.86rem;">📏 Medidas avanzadas con cinta métrica (Opcional)</strong>
+                    <p class="muted" style="margin:2px 0 0;font-size:0.76rem;">
+                      Actívalo solo si deseas ingresar cuello/cintura manualmente para usar la fórmula de la Marina EE.UU.
+                    </p>
+                  </div>
+                  <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:850;color:var(--green);">
+                    <input type="checkbox" id="toggleTapeMeasurements" ${prof.useTapeMeasurements ? 'checked' : ''} style="width:18px;height:18px;min-height:18px;accent-color:var(--green);" />
+                    <span>${prof.useTapeMeasurements ? 'Activado' : 'Activar'}</span>
+                  </label>
                 </div>
-                <div class="metric">
-                  <span>💪 Masa Magra y Muscular</span>
-                  <strong id="autoLeanMassDisplay">${m.leanMassLb} lb magras</strong>
-                  <small id="autoMuscleMassDisplay">~${m.skeletalMuscleMassLb} lb músculo (${m.skeletalMusclePct}%)</small>
-                  <div class="metric-novice-explain">Todo tu cuerpo libre de grasa (músculos y huesos).</div>
-                </div>
-                <div class="metric">
-                  <span>📊 IMC &amp; FFMI</span>
-                  <strong id="autoBmiDisplay">${m.bmi} IMC</strong>
-                  <small id="autoBmiCatDisplay">${escapeHtml(m.bmiCategory)}</small>
-                  <div class="metric-novice-explain">Relación entre tu peso y tu estatura.</div>
-                </div>
-                <div class="metric">
-                  <span>🔥 Meta Diaria Keto</span>
-                  <strong id="autoCalTargetDisplay">${m.suggestedCalories} kcal</strong>
-                  <small id="autoMacroTargetDisplay">${m.suggestedProtein}g Prot · ${m.suggestedNetCarbs}g Carbs</small>
-                  <div class="metric-novice-explain">Tus calorías, proteína y tope de carbohidratos al día.</div>
-                </div>
-              </div>
-            </div>
 
-            <div class="optional-toggle-banner">
-              <div>
-                <strong style="color:var(--green);font-size:0.9rem;">📏 Medidas avanzadas con cinta métrica (Cuello, Cintura, Cadera — 100% Opcional)</strong>
-                <p class="muted" style="margin:2px 0 0;font-size:0.78rem;">
-                  Desactivado por defecto para tu comodidad. Actívalo solo si deseas ingresar cuello/cintura manualmente.
-                </p>
-              </div>
-              <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:850;color:var(--green);">
-                <input type="checkbox" id="toggleTapeMeasurements" ${prof.useTapeMeasurements ? 'checked' : ''} style="width:18px;height:18px;min-height:18px;accent-color:var(--green);" />
-                <span>${prof.useTapeMeasurements ? 'Activado' : 'Activar medidas opcionales'}</span>
-              </label>
-            </div>
+                ${prof.useTapeMeasurements ? `
+                  <div class="form-grid" style="margin-top:12px;">
+                    <div class="field"><label>Cuello (in)</label><input type="number" name="neckIn" step="0.25" value="${prof.neckIn || 15.5}" /></div>
+                    <div class="field"><label>Cintura (in)</label><input type="number" name="waistIn" step="0.25" value="${prof.waistIn || 34}" /></div>
+                    <div class="field"><label>Cadera (in)</label><input type="number" name="hipIn" step="0.25" value="${prof.hipIn || 39}" /></div>
+                    <div class="field"><label>Pecho (in)</label><input type="number" name="chestIn" step="0.25" value="${prof.chestIn || 40}" /></div>
+                    <div class="field"><label>Brazo (in)</label><input type="number" name="armIn" step="0.25" value="${prof.armIn || 14}" /></div>
+                    <div class="field"><label>Muslo (in)</label><input type="number" name="thighIn" step="0.25" value="${prof.thighIn || 22}" /></div>
+                  </div>
+                ` : ''}
+              `
+            })}
+          </div>
 
-            ${prof.useTapeMeasurements ? `
-              <div class="form-grid" style="margin-top:12px;">
-                <div class="field"><label>Cuello (in)</label><input type="number" name="neckIn" step="0.25" value="${prof.neckIn || 15.5}" /></div>
-                <div class="field"><label>Cintura (in)</label><input type="number" name="waistIn" step="0.25" value="${prof.waistIn || 34}" /></div>
-                <div class="field"><label>Cadera (in)</label><input type="number" name="hipIn" step="0.25" value="${prof.hipIn || 39}" /></div>
-                <div class="field"><label>Pecho (in)</label><input type="number" name="chestIn" step="0.25" value="${prof.chestIn || 40}" /></div>
-                <div class="field"><label>Brazo (in)</label><input type="number" name="armIn" step="0.25" value="${prof.armIn || 14}" /></div>
-                <div class="field"><label>Muslo (in)</label><input type="number" name="thighIn" step="0.25" value="${prof.thighIn || 22}" /></div>
-              </div>
-            ` : ''}
-
-            <div class="actions" style="margin-top:16px;flex-wrap:wrap;gap:10px;">
-              <button type="submit">💾 Guardar Biometría</button>
-              <button type="button" class="secondary" style="border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
-                ⬇️ Descargar Perfil (.JSON)
-              </button>
-              <button type="button" class="secondary" data-action="trigger-import-json">
-                ⬆️ Cargar Perfil (.JSON)
-              </button>
-            </div>
-          </form>
-        </section>
+          <div class="actions" style="margin-top:12px;flex-wrap:wrap;gap:8px;">
+            <button type="submit">💾 Guardar Biometría</button>
+            <button type="button" class="secondary" style="border-color:rgba(57,255,20,0.45);color:var(--green);" data-action="export-profile-json">
+              ⬇️ Descargar Perfil (.JSON)
+            </button>
+            <button type="button" class="secondary" data-action="trigger-import-json">
+              ⬆️ Cargar Perfil (.JSON)
+            </button>
+          </div>
+        </form>
       ` : ''}
 
       ${subTab === 'salud' ? `
-        <section class="panel">
-          <span class="eyebrow">ADAPTACIÓN INTELIGENTE DE EJERCICIOS Y NUTRICIÓN</span>
-          <h3 style="margin:4px 0 12px;">Equipo Disponible, Lesiones Articulares y Condiciones Médicas</h3>
-
-          <div style="display:grid;gap:18px;">
-            <div>
-              <label style="font-size:0.84rem;font-weight:850;color:var(--green);">🏋️ 1. Equipo disponible (La rutina filtra ejercicios según lo que tienes):</label>
+        <div class="collapsible-stack">
+          ${renderCollapsibleSection({
+            group: 'profileHealth',
+            id: 'health-equip',
+            eyebrow: 'SECCIÓN 1 · HERRAMIENTAS',
+            title: '🏋️ Equipo Disponible (Mancuernas, Barra, Banco, Máquinas...)',
+            summary: `${prof.equipmentTags.length} seleccionados`,
+            isOpen: getOpenSection('profileHealth', 'health-equip') === 'health-equip',
+            bodyHtml: `
+              <p class="muted" style="margin:0 0 8px;font-size:0.8rem;">Marca las herramientas con las que cuentas para que la rutina priorice esos ejercicios:</p>
               <div class="profile-chip-group">
                 ${EQUIPMENT_CHIPS.map((c) => {
                   const isSel = (prof.equipmentTags || []).includes(c.id);
@@ -2145,10 +2237,18 @@
                   `;
                 }).join('')}
               </div>
-            </div>
+            `
+          })}
 
-            <div>
-              <label style="font-size:0.84rem;font-weight:850;color:var(--green);">🩹 2. Lesiones o molestias articulares (Sustituye ejercicios de impacto por variantes seguras del mismo músculo):</label>
+          ${renderCollapsibleSection({
+            group: 'profileHealth',
+            id: 'health-injuries',
+            eyebrow: 'SECCIÓN 2 · CUIDADO ARTICULAR',
+            title: '🩹 Lesiones o Molestias Articulares',
+            summary: prof.injuryTags.length ? `${prof.injuryTags.length} activas` : 'Ninguna',
+            isOpen: getOpenSection('profileHealth', 'health-equip') === 'health-injuries',
+            bodyHtml: `
+              <p class="muted" style="margin:0 0 8px;font-size:0.8rem;">Sustituye automáticamente ejercicios de alto impacto por variantes seguras del mismo músculo:</p>
               <div class="profile-chip-group">
                 ${INJURY_CHIPS.map((c) => {
                   const isSel = (prof.injuryTags || []).includes(c.id);
@@ -2159,11 +2259,18 @@
                   `;
                 }).join('')}
               </div>
-            </div>
+            `
+          })}
 
-            <div>
-              <label style="font-size:0.84rem;font-weight:850;color:var(--green);">🩺 3. Condiciones médicas (Ajusta RPE, respiración y macros del Plan Keto):</label>
-              <div class="profile-chip-group">
+          ${renderCollapsibleSection({
+            group: 'profileHealth',
+            id: 'health-medical',
+            eyebrow: 'SECCIÓN 3 · CONDICIONES MÉDICAS & EFECTO',
+            title: '🩺 Condiciones Médicas y Resumen de Adaptación',
+            summary: prof.medicalTags.length ? `${prof.medicalTags.length} activas` : 'Estándar',
+            isOpen: getOpenSection('profileHealth', 'health-equip') === 'health-medical',
+            bodyHtml: `
+              <div class="profile-chip-group" style="margin-bottom:12px;">
                 ${MEDICAL_CHIPS.map((c) => {
                   const isSel = (prof.medicalTags || []).includes(c.id);
                   return `
@@ -2173,31 +2280,31 @@
                   `;
                 }).join('')}
               </div>
-            </div>
-          </div>
 
-          <div class="profile-impact-box">
-            <h4 style="margin:0 0 8px;color:var(--green);">💡 ¿Qué aporta FitRecord con tus selecciones actuales?</h4>
-            <div class="calc-note-grid">
-              <div class="calc-note">
-                <strong>Equipo y Nivel (${escapeHtml(prof.level.toUpperCase())})</strong><br>
-                Filtra los 1,324 ejercicios para priorizar tus ${prof.equipmentTags.length} tipos de equipo y dificultad acorde a tu experiencia.
+              <div class="profile-impact-box" style="margin-top:0;">
+                <h4 style="margin:0 0 8px;color:var(--green);">💡 ¿Qué aporta FitRecord con tus selecciones actuales?</h4>
+                <div class="calc-note-grid">
+                  <div class="calc-note">
+                    <strong>Equipo y Nivel (${escapeHtml(prof.level.toUpperCase())})</strong><br>
+                    Filtra los 1,324 ejercicios para priorizar tus ${prof.equipmentTags.length} tipos de equipo y dificultad acorde a tu experiencia.
+                  </div>
+                  <div class="calc-note">
+                    <strong>Protección Articular</strong><br>
+                    ${prof.injuryTags.length
+                      ? prof.injuryTags.map((id) => INJURY_CHIPS.find((x) => x.id === id)?.desc).filter(Boolean).join(' ')
+                      : 'Ninguna lesión marcada: todos los patrones biomecánicos habilitados.'}
+                  </div>
+                  <div class="calc-note">
+                    <strong>Condiciones Médicas &amp; Keto</strong><br>
+                    ${prof.medicalTags.length
+                      ? prof.medicalTags.map((id) => MEDICAL_CHIPS.find((x) => x.id === id)?.desc).filter(Boolean).join(' ')
+                      : 'Parámetros estándar activos.'}
+                  </div>
+                </div>
               </div>
-              <div class="calc-note">
-                <strong>Protección Articular</strong><br>
-                ${prof.injuryTags.length
-                  ? prof.injuryTags.map((id) => INJURY_CHIPS.find((x) => x.id === id)?.desc).filter(Boolean).join(' ')
-                  : 'Ninguna lesión marcada: todos los patrones biomecánicos habilitados.'}
-              </div>
-              <div class="calc-note">
-                <strong>Condiciones Médicas &amp; Keto</strong><br>
-                ${prof.medicalTags.length
-                  ? prof.medicalTags.map((id) => MEDICAL_CHIPS.find((x) => x.id === id)?.desc).filter(Boolean).join(' ')
-                  : 'Parámetros estándar activos.'}
-              </div>
-            </div>
-          </div>
-        </section>
+            `
+          })}
+        </div>
       ` : ''}
 
       ${subTab === 'historial' ? `
@@ -3234,6 +3341,24 @@
       state.profileSubTab = actEl.dataset.subtab || 'biometria';
       saveState();
       render();
+    } else if (action === 'toggle-collapsible-section') {
+      const grp = actEl.dataset.accGroup || 'default';
+      const id = actEl.dataset.accId;
+      if (!state.openSections || typeof state.openSections !== 'object') state.openSections = {};
+      const currentOpen = state.openSections[grp];
+      const nextOpen = currentOpen === id ? null : id;
+      state.openSections[grp] = nextOpen;
+      saveState();
+
+      // Update DOM directly so any unsaved form inputs stay intact and smooth!
+      document.querySelectorAll(`.collapsible-section[data-acc-group="${grp}"]`).forEach((sec) => {
+        const isNowOpen = sec.dataset.accId === nextOpen;
+        sec.classList.toggle('is-open', isNowOpen);
+        const btn = sec.querySelector('.collapsible-header');
+        const chev = sec.querySelector('.collapsible-chevron');
+        if (btn) btn.setAttribute('aria-expanded', isNowOpen ? 'true' : 'false');
+        if (chev) chev.textContent = isNowOpen ? '▲' : '▼';
+      });
     } else if (action === 'export-profile-json') {
       exportActiveProfileJson();
     } else if (action === 'export-full-backup-json') {
